@@ -7,10 +7,10 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.any
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
-import org.radarbase.stream.ruleengine.domain.ActionConfig
-import org.radarbase.stream.ruleengine.domain.ConditionConfig
+import org.radarbase.stream.ruleengine.domain.Action
+import org.radarbase.stream.ruleengine.domain.Condition
 import org.radarbase.stream.ruleengine.domain.ExpressionType
-import org.radarbase.stream.ruleengine.domain.InterventionConfig
+import org.radarbase.stream.ruleengine.domain.Rule
 import org.radarbase.stream.ruleengine.domain.RuleKey
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -35,7 +35,7 @@ class RuleGroupProcessorTest {
 
     @Test
     fun `condition with subjects maps to a user scope`() {
-        val config = interventionConfig(name = "rule1", subjects = listOf("subject-1"))
+        val config = rule(name = "rule1", subjects = listOf("subject-1"))
         processor.process(Record(ruleKey("rule1"), config, 0L))
 
         assertEquals(setOf(ruleKey("rule1").toStoreKey()), store.get("user.subject-1")!!.rules.keys)
@@ -44,7 +44,7 @@ class RuleGroupProcessorTest {
 
     @Test
     fun `condition with projects maps to a project scope`() {
-        val config = interventionConfig(name = "rule1", projects = listOf("project-1"))
+        val config = rule(name = "rule1", projects = listOf("project-1"))
         processor.process(Record(ruleKey("rule1"), config, 0L))
 
         assertTrue(store.get("project.project-1")!!.rules.containsKey(ruleKey("rule1").toStoreKey()))
@@ -53,7 +53,7 @@ class RuleGroupProcessorTest {
 
     @Test
     fun `condition with neither subjects nor projects maps to the global scope`() {
-        val config = interventionConfig(name = "rule1")
+        val config = rule(name = "rule1")
         processor.process(Record(ruleKey("rule1"), config, 0L))
 
         assertTrue(store.get(ScopePrefix.GLOBAL.scope)!!.rules.containsKey(ruleKey("rule1").toStoreKey()))
@@ -62,11 +62,11 @@ class RuleGroupProcessorTest {
     @Test
     fun `moving a rule from one scope to another removes it from the old scope`() {
         val key = ruleKey("rule1")
-        val originalConfig = interventionConfig(name = "rule1", projects = listOf("project-1"))
+        val originalConfig = rule(name = "rule1", projects = listOf("project-1"))
         processor.process(Record(key, originalConfig, 0L))
         assertTrue(store.get("project.project-1")!!.rules.containsKey(key.toStoreKey()))
 
-        val movedConfig = interventionConfig(name = "rule1", subjects = listOf("subject-1"))
+        val movedConfig = rule(name = "rule1", subjects = listOf("subject-1"))
         processor.process(Record(key, movedConfig, 0L))
 
         assertNull(store.get("project.project-1")?.rules?.get(key.toStoreKey()))
@@ -76,7 +76,7 @@ class RuleGroupProcessorTest {
     @Test
     fun `a tombstone removes the rule from all scopes it was in`() {
         val key = ruleKey("rule1")
-        val config = interventionConfig(name = "rule1", projects = listOf("project-1"))
+        val config = rule(name = "rule1", projects = listOf("project-1"))
         processor.process(Record(key, config, 0L))
         assertTrue(store.get("project.project-1")!!.rules.containsKey(key.toStoreKey()))
 
@@ -87,8 +87,8 @@ class RuleGroupProcessorTest {
 
     @Test
     fun `multiple rules aggregate into the same scope`() {
-        val configA = interventionConfig(name = "rule_a", projects = listOf("project-1"))
-        val configB = interventionConfig(name = "rule_b", projects = listOf("project-1"))
+        val configA = rule(name = "rule_a", projects = listOf("project-1"))
+        val configB = rule(name = "rule_b", projects = listOf("project-1"))
 
         processor.process(Record(ruleKey("rule_a"), configA, 0L))
         processor.process(Record(ruleKey("rule_b"), configB, 0L))
@@ -101,15 +101,15 @@ class RuleGroupProcessorTest {
 
     private fun ruleKey(name: String) = RuleKey(clientId = "client", scope = "config", name = name)
 
-    private fun interventionConfig(
+    private fun rule(
         name: String,
         projects: List<String>? = null,
         subjects: List<String>? = null,
-    ) = InterventionConfig(
+    ) = Rule(
         name = name,
         topic = "output_topic",
-        conditionConfigs = listOf(
-            ConditionConfig(
+        conditions = listOf(
+            Condition(
                 type = ExpressionType.CEL,
                 expression = "true",
                 name = "${name}_condition",
@@ -117,6 +117,6 @@ class RuleGroupProcessorTest {
                 subjects = subjects,
             ),
         ),
-        actionConfigs = listOf(ActionConfig(name = "notify")),
+        actions = listOf(Action(name = "notify")),
     )
 }

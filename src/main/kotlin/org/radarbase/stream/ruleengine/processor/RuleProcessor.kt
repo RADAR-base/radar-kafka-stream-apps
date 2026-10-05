@@ -5,20 +5,20 @@ import org.apache.kafka.streams.processor.api.ContextualProcessor
 import org.apache.kafka.streams.processor.api.ProcessorContext
 import org.apache.kafka.streams.processor.api.Record
 import org.apache.kafka.streams.state.ReadOnlyKeyValueStore
-import org.radarbase.stream.ruleengine.domain.ActionConfig
-import org.radarbase.stream.ruleengine.domain.InterventionConfig
+import org.radarbase.stream.ruleengine.domain.Action
+import org.radarbase.stream.ruleengine.domain.Rule
 import org.radarbase.stream.ruleengine.domain.RuleGroup
 import org.radarbase.stream.ruleengine.evaluator.ConditionFactory
 import org.slf4j.LoggerFactory
 
-//TODO: deploy on cluster
+// TODO: deploy on cluster
 class RuleProcessor(
     val globalStoreName: String,
-) : ContextualProcessor<GenericRecord, GenericRecord, GenericRecord, ActionConfig>() {
+) : ContextualProcessor<GenericRecord, GenericRecord, GenericRecord, Action>() {
 
     private lateinit var groupedRulesStore: ReadOnlyKeyValueStore<String, RuleGroup>
 
-    override fun init(context: ProcessorContext<GenericRecord, ActionConfig>) {
+    override fun init(context: ProcessorContext<GenericRecord, Action>) {
         super.init(context)
         groupedRulesStore = context().getStateStore(globalStoreName)
     }
@@ -36,13 +36,13 @@ class RuleProcessor(
 
         logger.debug("Processing record from topic {} with key {} and value {}", topic, recordKey, recordValue)
 
-        val rule: RuleGroup = groupedRulesStore.get(ScopePrefix.GLOBAL.scope) ?: return
+        val ruleGroup: RuleGroup = groupedRulesStore.get(ScopePrefix.GLOBAL.scope) ?: return
         // TODO: do something with Scope
 
-        rule.rules.forEach { (_, interventionConfig) ->
-            val result = evaluateRule(interventionConfig, recordKey, recordValue)
+        ruleGroup.rules.forEach { (_, rule) ->
+            val result = evaluateRule(rule, recordKey, recordValue)
             if (result) {
-                interventionConfig.actionConfigs
+                rule.actions
                     .forEach { action -> context().forward(Record(null, action, record.timestamp())) }
                 // TODO: Forward to the correct output streams
             }
@@ -50,18 +50,18 @@ class RuleProcessor(
     }
 
     private fun evaluateRule(
-        interventionConfig: InterventionConfig,
+        rule: Rule,
         recordKey: Map<String, Any?>,
         recordValue: Map<String, Any?>,
     ): Boolean {
-        val applicableConditions = interventionConfig.conditionConfigs
+        val applicableConditions = rule.conditions
         try {
             return applicableConditions.any { condition ->
                 val evaluator = ConditionFactory.getConditionEvaluator(condition)
                 evaluator.isTrueFor(recordKey, recordValue, condition.expression)
             }
         } catch (e: Exception) {
-            logger.warn("Failed to evaluate rule {}: {}", interventionConfig.name, e.message)
+            logger.warn("Failed to evaluate rule {}: {}", rule.name, e.message)
             return false
         }
     }

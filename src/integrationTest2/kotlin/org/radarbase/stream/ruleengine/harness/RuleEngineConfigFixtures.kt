@@ -9,7 +9,7 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.ByteArraySerializer
-import org.radarbase.stream.ruleengine.domain.InterventionConfig
+import org.radarbase.stream.ruleengine.domain.Rule
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.util.Properties
@@ -73,7 +73,7 @@ object RuleEngineConfigFixtures {
         },
     )
 
-    fun value(id: Int, clientId: String, scope: String, name: String, config: InterventionConfig): ByteArray =
+    fun value(id: Int, clientId: String, scope: String, name: String, config: Rule): ByteArray =
         valueRaw(id, clientId, scope, name, mapper.writeValueAsString(config))
 
     fun valueRaw(id: Int, clientId: String, scope: String, name: String, rawJson: String?): ByteArray = encode(

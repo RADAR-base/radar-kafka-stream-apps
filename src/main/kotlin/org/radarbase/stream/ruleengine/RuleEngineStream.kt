@@ -11,15 +11,15 @@ import org.apache.kafka.streams.kstream.Produced
 import org.apache.kafka.streams.processor.api.ProcessorSupplier
 import org.apache.kafka.streams.state.Stores
 import org.radarbase.config.GlobalStoreConfig
-import org.radarbase.stream.ruleengine.domain.ActionConfig
 import org.radarbase.stream.AbstractStreamWorker
 import org.radarbase.stream.StreamDefinition
+import org.radarbase.stream.ruleengine.domain.Action
 import org.radarbase.stream.ruleengine.domain.RuleGroup
 import org.radarbase.stream.ruleengine.processor.RuleGroupProcessor
 import org.radarbase.stream.ruleengine.processor.RuleProcessor
-import org.radarbase.stream.ruleengine.serde.InterventionConfigSerde
 import org.radarbase.stream.ruleengine.serde.JsonSerde
 import org.radarbase.stream.ruleengine.serde.RuleKeySerde
+import org.radarbase.stream.ruleengine.serde.RuleSerde
 import org.radarbase.topic.KafkaTopic
 import org.radarbase.util.getStreamProperties
 import java.time.Duration
@@ -28,9 +28,8 @@ class RuleEngineStream : AbstractStreamWorker() {
 
     val ruleGroupSerde = JsonSerde(RuleGroup::class.java)
     val ruleKeySerde = RuleKeySerde() // TODO: should the rule_engine_config_key.avsc file be stored somewhere shared?
-    val interventionConfig = InterventionConfigSerde()
-    val actionConfigSerde = JsonSerde(ActionConfig::class.java)
-
+    val ruleSerde = RuleSerde()
+    val actionSerde = JsonSerde(Action::class.java)
 
     override fun createStreams(): List<KafkaStreams> {
         return getStreamDefinitions().toList().map { def ->
@@ -44,13 +43,13 @@ class RuleEngineStream : AbstractStreamWorker() {
             builder.addGlobalStore(
                 storeBuilder,
                 storeConfig.topic.name,
-                Consumed.with(ruleKeySerde, interventionConfig)
+                Consumed.with(ruleKeySerde, ruleSerde)
                     .withOffsetResetPolicy(Topology.AutoOffsetReset.EARLIEST),
                 ProcessorSupplier { RuleGroupProcessor(storeConfig.storeName) },
             )
             builder.stream<GenericRecord, GenericRecord>(def.inputTopic.name)
                 .process(ProcessorSupplier { RuleProcessor(storeConfig.storeName) })
-                .to(def.outputTopic.name, Produced.valueSerde(actionConfigSerde))
+                .to(def.outputTopic.name, Produced.valueSerde(actionSerde))
             val properties = getStreamProperties(
                 this.javaClass,
                 def,

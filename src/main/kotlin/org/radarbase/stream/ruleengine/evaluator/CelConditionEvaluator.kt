@@ -26,7 +26,6 @@ object CelConditionEvaluator : ConditionEvaluator {
     private val astCache = ConcurrentHashMap<String, CelAbstractSyntaxTree>()
     private val programCache = ConcurrentHashMap<String, CelRuntime.Program>()
 
-
     override fun isTrueFor(key: Map<String, Any?>, value: Map<String, Any?>, expression: String): Boolean {
         logger.debug("Evaluating expression {} against key: {} and value {}", expression, key, value)
 

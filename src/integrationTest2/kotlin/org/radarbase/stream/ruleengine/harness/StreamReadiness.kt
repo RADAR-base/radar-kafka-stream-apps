@@ -4,7 +4,6 @@ import org.apache.kafka.streams.KafkaStreams
 import java.time.Duration
 import java.time.Instant
 
-
 object StreamReadiness {
     private val POLL_INTERVAL: Duration = Duration.ofMillis(100)
     private val TERMINAL_STATES = setOf(KafkaStreams.State.ERROR, KafkaStreams.State.PENDING_SHUTDOWN, KafkaStreams.State.NOT_RUNNING)

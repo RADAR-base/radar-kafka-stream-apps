@@ -8,7 +8,6 @@ import org.apache.kafka.streams.state.ReadOnlyKeyValueStore
 import java.time.Duration
 import java.time.Instant
 
-
 object StateStoreQueries {
     private val POLL_INTERVAL: Duration = Duration.ofMillis(100)
 

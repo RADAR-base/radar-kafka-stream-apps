@@ -9,11 +9,11 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.io.TempDir
 import org.radarbase.config.SingleStreamConfig
-import org.radarbase.stream.ruleengine.domain.ActionConfig
-import org.radarbase.stream.ruleengine.domain.ConditionConfig
-import org.radarbase.stream.ruleengine.domain.ExpressionType
-import org.radarbase.stream.ruleengine.domain.InterventionConfig
 import org.radarbase.stream.StreamMaster
+import org.radarbase.stream.ruleengine.domain.Action
+import org.radarbase.stream.ruleengine.domain.Condition
+import org.radarbase.stream.ruleengine.domain.ExpressionType
+import org.radarbase.stream.ruleengine.domain.Rule
 import org.radarbase.stream.ruleengine.domain.RuleGroup
 import org.radarbase.stream.ruleengine.domain.RuleKey
 import org.radarbase.stream.ruleengine.harness.FixtureRadarConfigHandler
@@ -43,7 +43,7 @@ class GlobalStore {
     fun `global store is populated from a global-scope rule`(@TempDir stateDir: Path) {
         val topics = Topics.unique()
         val ruleKey = RuleKey(clientId = "radar-backend-it", scope = "config", name = "high_heart_rate")
-        val config = interventionConfig(name = "high_heart_rate", topic = topics.outputTopic, expression = "value.heartRate > 120")
+        val config = rule(name = "high_heart_rate", topic = topics.outputTopic, expression = "value.heartRate > 120")
 
         publish(topics, id = 1, ruleKey = ruleKey, config = config)
 
@@ -60,7 +60,7 @@ class GlobalStore {
     fun `global store restore survives malformed legacy JSON and keeps the later well-formed record`(@TempDir stateDir: Path) {
         val topics = Topics.unique()
         val ruleKey = RuleKey(clientId = "radar-backend-it", scope = "project.test-questionnaire", name = "rule4")
-        val config = interventionConfig(name = "rule4", topic = topics.outputTopic, expression = "value.heartRate > 120")
+        val config = rule(name = "rule4", topic = topics.outputTopic, expression = "value.heartRate > 120")
 
         val malformedJson = """
             {"name":"rule4","topic":"${topics.outputTopic}","conditions":[{"type":"cel","expression":"value.heartRate > 120"       "projects":["STAGING_PROJECT"],"subjects":null,"name":"rule4_condition"}],"actions":[{"name":"notify"}]}
@@ -90,7 +90,7 @@ class GlobalStore {
         assertEquals(config, ruleGroup!!.rules[ruleKey.toStoreKey()])
     }
 
-    private fun publish(topics: Topics, id: Int, ruleKey: RuleKey, config: InterventionConfig) {
+    private fun publish(topics: Topics, id: Int, ruleKey: RuleKey, config: Rule) {
         KafkaTopics.createTopics(KafkaBroker.bootstrapServers, topics.inputTopic, topics.outputTopic, topics.globalStoreTopic)
         RuleEngineConfigFixtures.publish(
             KafkaBroker.bootstrapServers,
@@ -100,13 +100,13 @@ class GlobalStore {
         )
     }
 
-    private fun interventionConfig(name: String, topic: String, expression: String) = InterventionConfig(
+    private fun rule(name: String, topic: String, expression: String) = Rule(
         name = name,
         topic = topic,
-        conditionConfigs = listOf(
-            ConditionConfig(type = ExpressionType.CEL, expression = expression, name = "${name}_condition"),
+        conditions = listOf(
+            Condition(type = ExpressionType.CEL, expression = expression, name = "${name}_condition"),
         ),
-        actionConfigs = listOf(ActionConfig(name = "notify")),
+        actions = listOf(Action(name = "notify")),
     )
 
     private fun startWorker(topics: Topics, stateDir: Path): KafkaStreams {

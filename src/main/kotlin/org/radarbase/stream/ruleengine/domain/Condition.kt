@@ -1,6 +1,6 @@
 package org.radarbase.stream.ruleengine.domain
 
-data class ConditionConfig(
+data class Condition(
     val type: ExpressionType,
     val expression: String,
     override val name: String,
@@ -11,7 +11,7 @@ data class ConditionConfig(
     override val subjectIdField: String? = null,
     override val sourceIdField: String? = null,
     override val timeField: String? = null,
-) : ScopedConfig
+) : Scoped
 
 enum class ExpressionType(val type: String) {
     CEL("cel"),

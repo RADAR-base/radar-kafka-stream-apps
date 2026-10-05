@@ -1,6 +1,6 @@
 package org.radarbase.stream.ruleengine.domain
 
-data class ActionConfig(
+data class Action(
     // 'name' must match defined nomenclature recognizable by consumers.
     override val name: String,
     override val properties: Map<String, Any>? = null,
@@ -10,4 +10,4 @@ data class ActionConfig(
     override val subjectIdField: String? = null,
     override val sourceIdField: String? = null,
     override val timeField: String? = null,
-) : ScopedConfig
+) : Scoped

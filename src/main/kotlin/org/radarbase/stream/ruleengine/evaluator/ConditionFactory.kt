@@ -1,6 +1,6 @@
 package org.radarbase.stream.ruleengine.evaluator
 
-import org.radarbase.stream.ruleengine.domain.ConditionConfig
+import org.radarbase.stream.ruleengine.domain.Condition
 import org.radarbase.stream.ruleengine.domain.ExpressionType
 
 /**
@@ -9,11 +9,11 @@ import org.radarbase.stream.ruleengine.domain.ExpressionType
  */
 object ConditionFactory {
     @JvmStatic
-    fun getConditionEvaluator(conditionConfig: ConditionConfig): CelConditionEvaluator {
-        return when (conditionConfig.type) {
+    fun getConditionEvaluator(condition: Condition): CelConditionEvaluator {
+        return when (condition.type) {
             CelConditionEvaluator.TYPE_NAME -> CelConditionEvaluator
             else -> throw IllegalArgumentException(
-                "The specified condition with type " + conditionConfig.type + " is not correct. Implementations are: " + ExpressionType.entries.joinToString(
+                "The specified condition with type " + condition.type + " is not correct. Implementations are: " + ExpressionType.entries.joinToString(
                     ", ",
                 ) { it.name },
             )

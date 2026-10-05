@@ -6,7 +6,7 @@ import org.apache.avro.Schema
 import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serializer
-import org.radarbase.stream.ruleengine.domain.InterventionConfig
+import org.radarbase.stream.ruleengine.domain.Rule
 import org.slf4j.LoggerFactory
 
 // TODO: Should the file avro or schema repo be used?
@@ -29,14 +29,14 @@ private val VALUE_SCHEMA: Schema = Schema.Parser().parse(
     """.trimIndent(),
 )
 
-class InterventionConfigSerde : Serde<InterventionConfig> {
+class RuleSerde : Serde<Rule> {
     private val avroSerde = AvroSerde(VALUE_SCHEMA)
     private val mapper = jacksonObjectMapper()
 
-    override fun serializer(): Serializer<InterventionConfig> = Serializer { topic, _ -> avroSerde.unsupportedProducer(topic) }
+    override fun serializer(): Serializer<Rule> = Serializer { topic, _ -> avroSerde.unsupportedProducer(topic) }
 
-    override fun deserializer(): Deserializer<InterventionConfig> = object : Deserializer<InterventionConfig> {
-        override fun deserialize(topic: String?, data: ByteArray?): InterventionConfig? {
+    override fun deserializer(): Deserializer<Rule> = object : Deserializer<Rule> {
+        override fun deserialize(topic: String?, data: ByteArray?): Rule? {
             val bytes = data ?: return null
             val record = avroSerde.decode(bytes)
             val json = record["value"]?.toString()
@@ -51,10 +51,10 @@ class InterventionConfigSerde : Serde<InterventionConfig> {
                 return null
             }
             return try {
-                mapper.readValue(json, InterventionConfig::class.java)
+                mapper.readValue(json, Rule::class.java)
             } catch (e: JsonProcessingException) {
                 logger.warn(
-                    "Failed to parse InterventionConfig JSON for rule_engine_config row id={} client_id={} scope={} name={}: {}",
+                    "Failed to parse Rule JSON for rule_engine_config row id={} client_id={} scope={} name={}: {}",
                     record["id"],
                     record["client_id"],
                     record["scope"],
@@ -67,6 +67,6 @@ class InterventionConfigSerde : Serde<InterventionConfig> {
     }
 
     companion object {
-        private val logger = LoggerFactory.getLogger(InterventionConfigSerde::class.java)
+        private val logger = LoggerFactory.getLogger(RuleSerde::class.java)
     }
 }

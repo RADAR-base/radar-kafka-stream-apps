@@ -15,11 +15,11 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.io.TempDir
 import org.radarbase.config.SingleStreamConfig
-import org.radarbase.stream.ruleengine.domain.ActionConfig
-import org.radarbase.stream.ruleengine.domain.ConditionConfig
-import org.radarbase.stream.ruleengine.domain.ExpressionType
-import org.radarbase.stream.ruleengine.domain.InterventionConfig
 import org.radarbase.stream.StreamMaster
+import org.radarbase.stream.ruleengine.domain.Action
+import org.radarbase.stream.ruleengine.domain.Condition
+import org.radarbase.stream.ruleengine.domain.ExpressionType
+import org.radarbase.stream.ruleengine.domain.Rule
 import org.radarbase.stream.ruleengine.domain.RuleKey
 import org.radarbase.stream.ruleengine.harness.FixtureRadarConfigHandler
 import org.radarbase.stream.ruleengine.harness.KafkaBroker
@@ -53,7 +53,7 @@ class ActionForwarding {
         val schemaRegistryUrl = "mock://${topics.globalStoreName}"
 
         val ruleKey = RuleKey(clientId = "radar-backend-it", scope = "config", name = "high_heart_rate")
-        val config = interventionConfig(name = "high_heart_rate", expression = "value.time > 120.0")
+        val config = rule(name = "high_heart_rate", expression = "value.time > 120.0")
 
         KafkaTopics.createTopics(KafkaBroker.bootstrapServers, topics.inputTopic, topics.outputTopic, topics.globalStoreTopic)
         RuleEngineConfigFixtures.publish(
@@ -74,9 +74,9 @@ class ActionForwarding {
             topic = topics.outputTopic,
             minCount = 1,
             streams = streams,
-        ) { bytes -> mapper.readValue(bytes, ActionConfig::class.java) }
+        ) { bytes -> mapper.readValue(bytes, Action::class.java) }
 
-        assertEquals(listOf(ActionConfig(name = "notify")), actions)
+        assertEquals(listOf(Action(name = "notify")), actions)
     }
 
     @Test
@@ -85,7 +85,7 @@ class ActionForwarding {
         val schemaRegistryUrl = "mock://${topics.globalStoreName}"
 
         val ruleKey = RuleKey(clientId = "radar-backend-it", scope = "config", name = "high_heart_rate")
-        val config = interventionConfig(name = "high_heart_rate", expression = "value.time > 120.0")
+        val config = rule(name = "high_heart_rate", expression = "value.time > 120.0")
 
         KafkaTopics.createTopics(KafkaBroker.bootstrapServers, topics.inputTopic, topics.outputTopic, topics.globalStoreTopic)
         RuleEngineConfigFixtures.publish(
@@ -106,7 +106,7 @@ class ActionForwarding {
             minCount = 1,
             timeout = QUIET_PERIOD,
             streams = streams,
-        ) { bytes -> mapper.readValue(bytes, ActionConfig::class.java) }
+        ) { bytes -> mapper.readValue(bytes, Action::class.java) }
 
         assertTrue(actions.isEmpty(), "Expected no actions to be forwarded for a non-matching record, got $actions")
     }
@@ -127,16 +127,16 @@ class ActionForwarding {
         }
     }
 
-    private fun interventionConfig(
+    private fun rule(
         name: String,
         expression: String,
         projects: List<String>? = null,
         subjects: List<String>? = null,
-    ) = InterventionConfig(
+    ) = Rule(
         name = name,
         topic = "output_topic",
-        conditionConfigs = listOf(
-            ConditionConfig(
+        conditions = listOf(
+            Condition(
                 type = ExpressionType.CEL,
                 expression = expression,
                 name = "${name}_condition",
@@ -144,7 +144,7 @@ class ActionForwarding {
                 subjects = subjects,
             ),
         ),
-        actionConfigs = listOf(ActionConfig(name = "notify")),
+        actions = listOf(Action(name = "notify")),
     )
 
     private fun startWorker(topics: Topics, stateDir: Path, schemaRegistryUrl: String): KafkaStreams {

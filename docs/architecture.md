@@ -30,9 +30,9 @@ class-name suffix.
 `RuleEngineStream` is a just-in-time intervention rule engine built on a Kafka Streams global store. Stream
 properties: `input_topic`, `output_topic`, `global_store_name`, `global_store_topic`.
 
-- **Rules.** `InterventionConfig`, `ConditionConfig` and `ActionConfig` (`org.radarbase.config.intervention`) define
+- **Rules.** `Rule`, `Condition` and `Action` (`org.radarbase.stream.ruleengine.domain`) define
   the shape of a rule document. Rules arrive on `global_store_topic`, a CDC-style config topic: the key is Avro
-  (`RuleKeySerde`), and the value is Avro with a JSON-encoded `InterventionConfig` inside (`InterventionConfigSerde`).
+  (`RuleKeySerde`), and the value is Avro with a JSON-encoded `Rule` inside (`RuleSerde`).
   `src/main/avro/rule_engine_config_*.avsc` documents both schemas; the serdes embed the same schemas inline, and no
   Avro Gradle plugin is applied.
 - **Global store.** `RuleGroupProcessor` maintains a persistent key-value store, `global_store_name`, mapping a scope
@@ -47,7 +47,7 @@ properties: `input_topic`, `output_topic`, `global_store_name`, `global_store_to
   `ConditionFactory` selects a `ConditionEvaluator` by `ExpressionType`.
   `CelConditionEvaluator` compiles and caches CEL (`dev.cel:cel`) programs, with the record exposed as `key` and
   `value` maps (`toCelCompatible()` converts Avro types into plain Kotlin types).
-- **Output.** Each matching rule forwards one record per `ActionConfig` whose scope applies to the record, to
+- **Output.** Each matching rule forwards one record per `Action` whose scope applies to the record, to
   `output_topic`, with a `null` key and the action serialized as JSON (`JsonSerde`).
 - `doCleanup()` closes `kafkaStreamsInstances` with a 1 s timeout. `AbstractStreamWorker.closeStreams()` sets
   `streams = null` before calling it, so in practice it closes nothing and `shutdown()` relies on the unbounded

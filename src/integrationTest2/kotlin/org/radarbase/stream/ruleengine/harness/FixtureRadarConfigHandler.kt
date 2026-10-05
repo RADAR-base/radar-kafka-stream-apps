@@ -6,7 +6,6 @@ import org.radarbase.config.RadarConfigHandler
 import org.radarbase.config.ServerConfig
 import org.radarbase.config.StreamConfig
 
-
 class FixtureRadarConfigHandler(
     bootstrapServers: String,
     schemaRegistryUrl: String = "http://unused-schema-registry:1",

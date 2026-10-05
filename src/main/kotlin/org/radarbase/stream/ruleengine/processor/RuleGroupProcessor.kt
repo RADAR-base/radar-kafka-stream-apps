@@ -4,15 +4,15 @@ import org.apache.kafka.streams.processor.api.Processor
 import org.apache.kafka.streams.processor.api.ProcessorContext
 import org.apache.kafka.streams.processor.api.Record
 import org.apache.kafka.streams.state.KeyValueStore
-import org.radarbase.stream.ruleengine.domain.ScopedConfig
-import org.radarbase.stream.ruleengine.domain.InterventionConfig
+import org.radarbase.stream.ruleengine.domain.Rule
 import org.radarbase.stream.ruleengine.domain.RuleGroup
 import org.radarbase.stream.ruleengine.domain.RuleKey
+import org.radarbase.stream.ruleengine.domain.Scoped
 import org.slf4j.LoggerFactory
 
 class RuleGroupProcessor(
     val globalStoreName: String,
-) : Processor<RuleKey, InterventionConfig, Void, Void> {
+) : Processor<RuleKey, Rule, Void, Void> {
 
     private lateinit var store: KeyValueStore<String, RuleGroup>
 
@@ -22,13 +22,13 @@ class RuleGroupProcessor(
 
     // TODO: What does this need to do? Consider changing the names
     // TODO: Investigate if tumbstone works correctly. -> Check what event the database sends.
-    override fun process(record: Record<RuleKey, InterventionConfig>) {
+    override fun process(record: Record<RuleKey, Rule>) {
         val key = record.key() ?: return
         val value = record.value()
         val storeKey = key.toStoreKey()
 
         val newScopeKeys = value
-            ?.conditionConfigs
+            ?.conditions
             ?.flatMapTo(mutableSetOf()) { it.toScopeKeys() }
             .orEmpty()
 
@@ -39,11 +39,11 @@ class RuleGroupProcessor(
             return
         }
 
-        value.conditionConfigs.forEach { conditionConfig ->
+        value.conditions.forEach { condition ->
 
-            logger.debug("Processing condition {} for rule {}", conditionConfig, key)
+            logger.debug("Processing condition {} for rule {}", condition, key)
 
-            conditionConfig.toScopeKeys().forEach { scopeKey ->
+            condition.toScopeKeys().forEach { scopeKey ->
                 val currentGroup = store.get(scopeKey) ?: RuleGroup()
                 val groupRules = currentGroup.rules + (storeKey to value)
                 store.put(scopeKey, RuleGroup(groupRules))
@@ -77,7 +77,7 @@ class RuleGroupProcessor(
     }
 }
 
-fun ScopedConfig.toScopeKeys(): List<String> {
+fun Scoped.toScopeKeys(): List<String> {
     val subjects = this.subjects
     if (!subjects.isNullOrEmpty()) {
         return subjects.map { "${ScopePrefix.USER.scope}$it" }

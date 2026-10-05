@@ -2,13 +2,13 @@ package org.radarbase.stream.ruleengine.domain
 
 import com.fasterxml.jackson.annotation.JsonProperty
 
-data class InterventionConfig(
+data class Rule(
     val name: String?,
     val topic: String,
     @JsonProperty("conditions")
-    val conditionConfigs: List<ConditionConfig>,
+    val conditions: List<Condition>,
     @JsonProperty("actions")
-    val actionConfigs: List<ActionConfig>,
+    val actions: List<Action>,
     @JsonProperty("consumer_properties")
     val consumerProperties: Map<String, String>? = null,
 )

@@ -11,9 +11,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-class InterventionConfigSerdeTest {
+class RuleSerdeTest {
 
-    private val serde = InterventionConfigSerde()
+    private val serde = RuleSerde()
 
     @Test
     fun `deserializer returns null instead of throwing for malformed legacy JSON`() {

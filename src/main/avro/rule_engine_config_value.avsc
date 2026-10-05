@@ -8,7 +8,7 @@
         {"name": "client_id", "type": ["null", "string"], "default": null},
         {"name": "scope", "type": ["null", "string"], "default": null},
         {"name": "name", "type": ["null", "string"], "default": null},
-        {"name": "value", "type": ["null", "string"], "default": null, "doc": "JSON-encoded InterventionConfig, not a nested Avro structure."},
+        {"name": "value", "type": ["null", "string"], "default": null, "doc": "JSON-encoded Rule, not a nested Avro structure."},
         {"name": "create_timestamp", "type": ["null", "long"], "default": null},
         {"name": "version", "type": ["null", "int"], "default": null}
     ]
