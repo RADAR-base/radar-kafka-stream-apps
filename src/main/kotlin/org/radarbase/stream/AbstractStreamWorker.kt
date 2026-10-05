@@ -116,17 +116,14 @@ abstract class AbstractStreamWorker : StreamWorker, StreamsUncaughtExceptionHand
 
     protected abstract fun initialize()
 
-    override fun handle(e: Throwable?): StreamsUncaughtExceptionHandler.StreamThreadExceptionResponse? {
-        logger.error("Thread has been terminated due to {} - {}", e?.message, e)
-        closeStreams()
-        if (e is StreamsException) {
-            master.restartStream(this)
-            // TODO check whether this is the right way to handle this
-            return StreamsUncaughtExceptionHandler.StreamThreadExceptionResponse.REPLACE_THREAD
+    override fun handle(e: Throwable?): StreamsUncaughtExceptionHandler.StreamThreadExceptionResponse {
+        return if (e is StreamsException) {
+            logger.error("Stream thread of {} terminated, replacing it: {}", javaClass.simpleName, e.message, e)
+            StreamsUncaughtExceptionHandler.StreamThreadExceptionResponse.REPLACE_THREAD
         } else {
-            master.notifyCrashedStream(javaClass.simpleName)
-            // TODO check whether this is the right way to handle this
-            return StreamsUncaughtExceptionHandler.StreamThreadExceptionResponse.SHUTDOWN_APPLICATION
+            logger.error("Stream thread of {} terminated by a fatal error, shutting down: {}", javaClass.simpleName, e?.message, e)
+            Thread({ master.notifyCrashedStream(javaClass.simpleName) }, "${javaClass.simpleName}-crash-handler").start()
+            StreamsUncaughtExceptionHandler.StreamThreadExceptionResponse.SHUTDOWN_APPLICATION
         }
     }
 

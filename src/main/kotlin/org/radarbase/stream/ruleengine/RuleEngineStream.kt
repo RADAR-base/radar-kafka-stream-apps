@@ -24,9 +24,6 @@ import org.radarbase.topic.KafkaTopic
 import org.radarbase.util.getStreamProperties
 import java.time.Duration
 
-/**
- * Definition of Kafka Stream for aggregating data collected by Empatica E4 Accelerometer sensor.
- */
 class RuleEngineStream : AbstractStreamWorker() {
 
     val ruleGroupSerde = JsonSerde(RuleGroup::class.java)
@@ -34,9 +31,7 @@ class RuleEngineStream : AbstractStreamWorker() {
     val interventionConfig = InterventionConfigSerde()
     val actionConfigSerde = JsonSerde(ActionConfig::class.java)
 
-    // TODO: implement a clean up phase
 
-    // TODO: Create
     override fun createStreams(): List<KafkaStreams> {
         return getStreamDefinitions().toList().map { def ->
             val storeConfig = def.globalStoreConfig!!

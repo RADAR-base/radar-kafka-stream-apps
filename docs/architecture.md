@@ -49,7 +49,14 @@ properties: `input_topic`, `output_topic`, `global_store_name`, `global_store_to
   `value` maps (`toCelCompatible()` converts Avro types into plain Kotlin types).
 - **Output.** Each matching rule forwards one record per `ActionConfig` whose scope applies to the record, to
   `output_topic`, with a `null` key and the action serialized as JSON (`JsonSerde`).
-- `doCleanup()` is not implemented (`TODO()`), so `RuleEngineStream.shutdown()` throws `NotImplementedError`.
+- `doCleanup()` closes `kafkaStreamsInstances` with a 1 s timeout. `AbstractStreamWorker.closeStreams()` sets
+  `streams = null` before calling it, so in practice it closes nothing and `shutdown()` relies on the unbounded
+  `KafkaStreams.close()`.
+- `AbstractStreamWorker.handle()` runs on the failed stream thread and only returns a response; it never closes the
+  client from that thread, because `close()` waits for that same thread to stop. A `StreamsException` gets
+  `REPLACE_THREAD`, and the new thread resumes from the last committed offset. Any other error gets
+  `SHUTDOWN_APPLICATION`, and the `StreamMaster` is notified from a separate thread.
+- `RuleProcessor` skips a record when no `global` rule group is stored.
 
 ## Configuration
 

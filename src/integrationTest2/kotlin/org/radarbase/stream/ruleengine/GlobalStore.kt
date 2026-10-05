@@ -23,6 +23,7 @@ import org.radarbase.stream.ruleengine.harness.KafkaTopics
 import org.radarbase.stream.ruleengine.harness.RuleEngineConfigFixtures
 import org.radarbase.stream.ruleengine.harness.StateStoreQueries
 import org.radarbase.stream.ruleengine.harness.StreamReadiness
+import org.radarbase.stream.ruleengine.harness.StreamTeardown
 import org.radarbase.stream.ruleengine.processor.ScopePrefix
 import java.nio.file.Path
 import java.util.UUID
@@ -35,7 +36,7 @@ class GlobalStore {
 
     @AfterEach
     fun tearDown() {
-        workers.forEach { worker -> worker.shutdown() }
+        StreamTeardown.closeAll(workers)
     }
 
     @Test
@@ -61,8 +62,6 @@ class GlobalStore {
         val ruleKey = RuleKey(clientId = "radar-backend-it", scope = "project.test-questionnaire", name = "rule4")
         val config = interventionConfig(name = "rule4", topic = topics.outputTopic, expression = "value.heartRate > 120")
 
-        // Reproduces a real historical row from rule_engine_config (scope=project.test-questionnaire,
-        // name=rule4, version=1): missing comma between the "expression" and "projects" fields.
         val malformedJson = """
             {"name":"rule4","topic":"${topics.outputTopic}","conditions":[{"type":"cel","expression":"value.heartRate > 120"       "projects":["STAGING_PROJECT"],"subjects":null,"name":"rule4_condition"}],"actions":[{"name":"notify"}]}
         """.trimIndent()
@@ -83,8 +82,6 @@ class GlobalStore {
 
         val streams = startWorker(topics, stateDir)
 
-        // The stream must reach RUNNING despite the malformed row - previously the default
-        // LogAndFailExceptionHandler killed the global stream thread on this exact shape.
         StreamReadiness.awaitRunning(listOf(streams))
 
         val ruleGroup: RuleGroup? = StateStoreQueries.waitForValue(streams, topics.globalStoreName, ScopePrefix.GLOBAL.scope)
@@ -129,8 +126,8 @@ class GlobalStore {
         val master = StreamMaster(configHandler, Stream.empty())
         val worker = RuleEngineStream()
         worker.configure(master, configHandler, singleStreamConfig)
-        worker.start()
         workers += worker
+        worker.start()
 
         return requireNotNull(worker.kafkaStreamsInstances) { "RuleEngineStream did not build any KafkaStreams instances" }.first()
     }

@@ -6,17 +6,7 @@ import org.radarbase.config.RadarConfigHandler
 import org.radarbase.config.ServerConfig
 import org.radarbase.config.StreamConfig
 
-/**
- * A [RadarConfigHandler] built in-memory from a Testcontainers broker address, standing in for
- * the `radar.yml`-backed [org.radarbase.config.RadarConfigHandlerImpl] used in production. Only
- * `broker` is real by default; `schema_registry` is a placeholder because the rule-engine
- * stream's global store uses explicit key/value Serdes (see
- * [org.radarbase.stream.ruleengine.RuleEngineStream]) and never actually contacts it. Pass
- * [schemaRegistryUrl] (e.g. `mock://<scope>`, backed by Confluent's in-memory
- * `MockSchemaRegistryClient`) for tests that exercise the `input_topic` side of the topology,
- * where the default `SpecificAvroSerde` key/value serdes need a real schema registry to decode
- * Avro records.
- */
+
 class FixtureRadarConfigHandler(
     bootstrapServers: String,
     schemaRegistryUrl: String = "http://unused-schema-registry:1",
@@ -41,7 +31,10 @@ class FixtureRadarConfigHandler(
                     this.host = schemaRegistryUrl.substringAfter("://")
                 },
             ),
-            stream = StreamConfig(),
+            stream = StreamConfig().apply {
+                threadsPerPriority = mapOf(RadarConfigHandler.Priority.NORMAL.param to 1)
+                properties = TEST_STREAM_PROPERTIES
+            },
             buildVersion = "integrationTest2",
         )
     }
@@ -53,4 +46,11 @@ class FixtureRadarConfigHandler(
     }
 
     override fun isLoaded(): Boolean = true
+
+    companion object {
+        val TEST_STREAM_PROPERTIES: Map<String, String> = mapOf(
+            "main.consumer.fetch.max.wait.ms" to "100",
+            "global.consumer.fetch.max.wait.ms" to "100",
+        )
+    }
 }

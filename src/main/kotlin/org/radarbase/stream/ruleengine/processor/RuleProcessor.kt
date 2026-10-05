@@ -11,6 +11,7 @@ import org.radarbase.stream.ruleengine.domain.RuleGroup
 import org.radarbase.stream.ruleengine.evaluator.ConditionFactory
 import org.slf4j.LoggerFactory
 
+//TODO: deploy on cluster
 class RuleProcessor(
     val globalStoreName: String,
 ) : ContextualProcessor<GenericRecord, GenericRecord, GenericRecord, ActionConfig>() {
@@ -35,7 +36,7 @@ class RuleProcessor(
 
         logger.debug("Processing record from topic {} with key {} and value {}", topic, recordKey, recordValue)
 
-        val rule = groupedRulesStore.get(ScopePrefix.GLOBAL.scope)
+        val rule: RuleGroup = groupedRulesStore.get(ScopePrefix.GLOBAL.scope) ?: return
         // TODO: do something with Scope
 
         rule.rules.forEach { (_, interventionConfig) ->

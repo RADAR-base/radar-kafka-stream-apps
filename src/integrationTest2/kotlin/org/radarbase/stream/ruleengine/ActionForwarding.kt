@@ -28,6 +28,7 @@ import org.radarbase.stream.ruleengine.harness.KafkaTopics
 import org.radarbase.stream.ruleengine.harness.OutputTopicConsumer
 import org.radarbase.stream.ruleengine.harness.RuleEngineConfigFixtures
 import org.radarbase.stream.ruleengine.harness.StreamReadiness
+import org.radarbase.stream.ruleengine.harness.StreamTeardown
 import org.radarcns.kafka.ObservationKey
 import org.radarcns.passive.pebble.Pebble2HeartRate
 import java.nio.file.Path
@@ -43,7 +44,7 @@ class ActionForwarding {
 
     @AfterEach
     fun tearDown() {
-        workers.forEach { worker -> worker.shutdown() }
+        StreamTeardown.closeAll(workers)
     }
 
     @Test
@@ -72,6 +73,7 @@ class ActionForwarding {
             bootstrapServers = KafkaBroker.bootstrapServers,
             topic = topics.outputTopic,
             minCount = 1,
+            streams = streams,
         ) { bytes -> mapper.readValue(bytes, ActionConfig::class.java) }
 
         assertEquals(listOf(ActionConfig(name = "notify")), actions)
@@ -102,6 +104,8 @@ class ActionForwarding {
             bootstrapServers = KafkaBroker.bootstrapServers,
             topic = topics.outputTopic,
             minCount = 1,
+            timeout = QUIET_PERIOD,
+            streams = streams,
         ) { bytes -> mapper.readValue(bytes, ActionConfig::class.java) }
 
         assertTrue(actions.isEmpty(), "Expected no actions to be forwarded for a non-matching record, got $actions")
@@ -160,10 +164,16 @@ class ActionForwarding {
         val master = StreamMaster(configHandler, java.util.stream.Stream.empty())
         val worker = RuleEngineStream()
         worker.configure(master, configHandler, singleStreamConfig)
-        worker.start()
+        // Register before start(), so teardown also closes a worker whose start() throws halfway.
         workers += worker
+        worker.start()
 
         return requireNotNull(worker.kafkaStreamsInstances) { "RuleEngineStream did not build any KafkaStreams instances" }.first()
+    }
+
+    private companion object {
+        /** How long the non-matching test listens for output before concluding that nothing was produced. */
+        val QUIET_PERIOD: Duration = Duration.ofSeconds(1)
     }
 
     private data class Topics(
