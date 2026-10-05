@@ -1,0 +1,40 @@
+#!/bin/bash
+
+set -e
+
+# Busy waiting loop that waits until all topic are available
+echo "===> Waiting for Kafka topics ... "
+
+if [ -z "$KAFKA_SCHEMA_REGISTRY" ]; then
+    echo "KAFKA_SCHEMA_REGISTRY is not defined"
+    exit 4
+fi
+
+max_timeout=32
+
+# TODO add logic to check the number of active Kafka nodes.
+
+tries=10
+timeout=1
+while true; do
+    if wget --spider -q "${KAFKA_SCHEMA_REGISTRY}/subjects" 2>/dev/null; then
+        break
+    fi
+    tries=$((tries - 1))
+    if [ $tries -eq 0 ]; then
+        echo "FAILED TO REACH SCHEMA REGISTRY. SCHEMAS NOT REGISTERED."
+        exit 6
+    fi
+    echo "Failed to reach schema registry. Retrying in ${timeout} seconds."
+    sleep $timeout
+    if [ $timeout -lt $max_timeout ]; then
+        timeout=$((timeout * 2))
+    fi
+done
+
+
+echo "Kafka is available. Ready to go!"
+
+# Start streams
+echo "===> Starting " "$@" "...."
+exec "$@"

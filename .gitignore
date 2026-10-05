@@ -1,0 +1,33 @@
+# Intellij
+.idea/
+*.iml
+*.iws
+classes/
+
+# Mac
+.DS_Store
+
+# Maven
+log/
+
+# Gradle
+.gradle/
+/buildSrc/.gradle/
+.gradletasknamecache
+
+# Build
+/build/
+/buildSrc/build
+
+# Kotlin
+/.kotlin/
+/buildSrc/.kotlin/
+
+/out/
+/libs/
+
+# Distribution
+/radar-kafka-stream-apps-*
+/CLAUDE.md
+/.claude/
+/.claude
