@@ -14,9 +14,9 @@ import org.mockito.Mockito.atLeast
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
-import org.radarbase.config.intervention.ActionConfig
-import org.radarbase.config.intervention.ConditionConfig
-import org.radarbase.config.intervention.ExpressionType
+import org.radarbase.stream.ruleengine.domain.ActionConfig
+import org.radarbase.stream.ruleengine.domain.ConditionConfig
+import org.radarbase.stream.ruleengine.domain.ExpressionType
 import org.radarbase.stream.ruleengine.domain.InterventionConfig
 import org.radarbase.stream.ruleengine.domain.RuleGroup
 import java.util.Optional

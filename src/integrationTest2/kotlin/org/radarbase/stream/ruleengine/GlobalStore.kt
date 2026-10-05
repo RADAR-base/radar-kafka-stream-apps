@@ -9,9 +9,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.io.TempDir
 import org.radarbase.config.SingleStreamConfig
-import org.radarbase.config.intervention.ActionConfig
-import org.radarbase.config.intervention.ConditionConfig
-import org.radarbase.config.intervention.ExpressionType
+import org.radarbase.stream.ruleengine.domain.ActionConfig
+import org.radarbase.stream.ruleengine.domain.ConditionConfig
+import org.radarbase.stream.ruleengine.domain.ExpressionType
 import org.radarbase.stream.ruleengine.domain.InterventionConfig
 import org.radarbase.stream.StreamMaster
 import org.radarbase.stream.ruleengine.domain.RuleGroup

@@ -1,6 +1,6 @@
-package org.radarbase.config.intervention
+package org.radarbase.stream.ruleengine.domain
 
-interface BaseConfig {
+interface ScopedConfig {
     val name: String
     val properties: Map<String, Any>?
     val projects: List<String>?

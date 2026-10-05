@@ -1,8 +1,6 @@
 package org.radarbase.stream.ruleengine.domain
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import org.radarbase.config.intervention.ActionConfig
-import org.radarbase.config.intervention.ConditionConfig
 
 data class InterventionConfig(
     val name: String?,

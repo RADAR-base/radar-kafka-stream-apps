@@ -11,7 +11,7 @@ import org.apache.kafka.streams.kstream.Produced
 import org.apache.kafka.streams.processor.api.ProcessorSupplier
 import org.apache.kafka.streams.state.Stores
 import org.radarbase.config.GlobalStoreConfig
-import org.radarbase.config.intervention.ActionConfig
+import org.radarbase.stream.ruleengine.domain.ActionConfig
 import org.radarbase.stream.AbstractStreamWorker
 import org.radarbase.stream.StreamDefinition
 import org.radarbase.stream.ruleengine.domain.RuleGroup

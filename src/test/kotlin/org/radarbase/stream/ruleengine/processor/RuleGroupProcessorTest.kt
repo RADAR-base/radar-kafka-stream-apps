@@ -7,9 +7,9 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito.any
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
-import org.radarbase.config.intervention.ActionConfig
-import org.radarbase.config.intervention.ConditionConfig
-import org.radarbase.config.intervention.ExpressionType
+import org.radarbase.stream.ruleengine.domain.ActionConfig
+import org.radarbase.stream.ruleengine.domain.ConditionConfig
+import org.radarbase.stream.ruleengine.domain.ExpressionType
 import org.radarbase.stream.ruleengine.domain.InterventionConfig
 import org.radarbase.stream.ruleengine.domain.RuleKey
 import kotlin.test.assertEquals

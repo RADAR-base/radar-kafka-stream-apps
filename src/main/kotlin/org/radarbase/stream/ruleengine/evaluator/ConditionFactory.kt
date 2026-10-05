@@ -1,7 +1,7 @@
 package org.radarbase.stream.ruleengine.evaluator
 
-import org.radarbase.config.intervention.ConditionConfig
-import org.radarbase.config.intervention.ExpressionType
+import org.radarbase.stream.ruleengine.domain.ConditionConfig
+import org.radarbase.stream.ruleengine.domain.ExpressionType
 
 /**
  * Factory class for [ConditionEvaluator]s. It instantiates conditions based on the configuration

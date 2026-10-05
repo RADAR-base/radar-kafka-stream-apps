@@ -5,7 +5,7 @@ import org.apache.kafka.streams.processor.api.ContextualProcessor
 import org.apache.kafka.streams.processor.api.ProcessorContext
 import org.apache.kafka.streams.processor.api.Record
 import org.apache.kafka.streams.state.ReadOnlyKeyValueStore
-import org.radarbase.config.intervention.ActionConfig
+import org.radarbase.stream.ruleengine.domain.ActionConfig
 import org.radarbase.stream.ruleengine.domain.InterventionConfig
 import org.radarbase.stream.ruleengine.domain.RuleGroup
 import org.radarbase.stream.ruleengine.evaluator.ConditionFactory
