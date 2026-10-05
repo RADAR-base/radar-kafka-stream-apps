@@ -29,7 +29,7 @@ import org.radarbase.util.getStreamProperties
 class RuleEngineStream : AbstractStreamWorker() {
 
     val ruleGroupSerde = JsonSerde(RuleGroup::class.java)
-    val ruleKeySerde = RuleKeySerde()
+    val ruleKeySerde = RuleKeySerde() // TODO: should the rule_engine_config_key.avsc file be stored somewhere shared?
     val interventionConfig = InterventionConfigSerde()
     val actionConfigSerde = JsonSerde(ActionConfig::class.java)
 

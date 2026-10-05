@@ -40,12 +40,15 @@ properties: `input_topic`, `output_topic`, `global_store_name`, `global_store_to
   changes scope is removed from its old scopes, and a tombstone removes it from all scopes. `RuleGroup.rules` is
   keyed by `RuleKey.toStoreKey()` (a string), because Jackson cannot deserialize a map keyed by `RuleKey`.
 - **Evaluation.** `RuleProcessor` consumes `input_topic` as Avro `GenericRecord`s, using the default Avro serde and
-  therefore the schema registry. It looks up the `RuleGroup`s for the record's user, project and `global` scope, and
-  evaluates each rule's conditions. `ConditionFactory` selects a `ConditionEvaluator` by `ExpressionType`.
+  therefore the schema registry. It looks up the `RuleGroup`s for `global`, `project.<projectId>` and
+  `user.<userId>` (fields of the record's `ObservationKey`), and evaluates each rule once, even when it is stored
+  under several scopes. A rule fires when all of its conditions that apply to the record's scopes hold; conditions
+  scoped to other projects or users are ignored, and an evaluation error counts as no match.
+  `ConditionFactory` selects a `ConditionEvaluator` by `ExpressionType`.
   `CelConditionEvaluator` compiles and caches CEL (`dev.cel:cel`) programs, with the record exposed as `key` and
   `value` maps (`toCelCompatible()` converts Avro types into plain Kotlin types).
-- **Output.** Each matching rule forwards one record per `ActionConfig` to `output_topic`, serialized as JSON
-  (`JsonSerde`).
+- **Output.** Each matching rule forwards one record per `ActionConfig` whose scope applies to the record, to
+  `output_topic`, with a `null` key and the action serialized as JSON (`JsonSerde`).
 - `doCleanup()` is not implemented (`TODO()`), so `RuleEngineStream.shutdown()` throws `NotImplementedError`.
 
 ## Configuration
