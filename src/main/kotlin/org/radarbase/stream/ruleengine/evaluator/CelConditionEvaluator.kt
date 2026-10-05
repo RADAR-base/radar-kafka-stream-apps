@@ -28,9 +28,6 @@ object CelConditionEvaluator : ConditionEvaluator {
 
     // TODO Can ik Map<*,*> typed maken maar uiteindelijk hoeft getEvaluator gewoon een map krijgen.
 
-    // TODO: kunnen we forwarden naar specifike output topic. Anders naar 1
-    // TODO: forwarden naar specifiek topic
-    // todo: Nieuwe repo toe.
     override fun isTrueFor(key: Map<*, *>, value: Map<*, *>, expression: String): Boolean {
         logger.debug("Evaluating expression {} against key: {} and value {}", expression, key, value)
 

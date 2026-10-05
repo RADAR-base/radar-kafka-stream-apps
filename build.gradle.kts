@@ -10,6 +10,7 @@ plugins {
     alias(libs.plugins.version.catalog.update)
     alias(libs.plugins.build.config)
     `jvm-test-suite`
+    kotlin("kapt") version "1.9.24"
 }
 
 description = "RADAR-base Kafka Streams applications, including a rule engine for just-in-time interventions."

@@ -36,7 +36,7 @@ class GlobalStore {
 
     @AfterEach
     fun tearDown() {
-        // RuleEngineStream.doCleanup() is an unimplemented TODO() (open question in the harness
+        // RuleEngineStream.doCleanup() is an unimplemented
         // plan), so worker.shutdown() would throw here. Close the underlying KafkaStreams
         // instances directly instead of going through shutdown()/closeStreams().
         workers.forEach { worker -> worker.kafkaStreamsInstances?.forEach { it.close(Duration.ofSeconds(10)) } }

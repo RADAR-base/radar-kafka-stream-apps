@@ -1,9 +1,8 @@
 package org.radarbase.stream.ruleengine.evaluator
 
 /**
- * TODO update package ref
  * A condition can be defined as any predicate on the incoming data that must be true before the
- * [org.radarbase.consumer.realtime.action.Action]s can be triggered.
+ * [org.radarbase.stream.ruleengine.evaluator]s can be triggered.
  */
 interface ConditionEvaluator {
 

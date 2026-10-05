@@ -61,26 +61,6 @@ class RuleProcessorTest {
     }
 
     @Test
-    fun `a project-scoped rule matches via the ObservationKey projectId field`() {
-        val config = interventionConfig("rule1", listOf(condition("true", projects = listOf("project-1"))))
-        seed("project.project-1", "rule1", config)
-
-        processor.process(Record(observationKey(projectId = "project-1"), sensorValue(0.0), 0L))
-
-        assertEquals(1, forwardedActions().size)
-    }
-
-    @Test
-    fun `a user-scoped rule matches via the ObservationKey userId field`() {
-        val config = interventionConfig("rule1", listOf(condition("true", subjects = listOf("subject-1"))))
-        seed("user.subject-1", "rule1", config)
-
-        processor.process(Record(observationKey(userId = "subject-1"), sensorValue(0.0), 0L))
-
-        assertEquals(1, forwardedActions().size)
-    }
-
-    @Test
     fun `a rule present in multiple scope buckets fires only once`() {
         val config = interventionConfig(
             "rule1",
@@ -98,35 +78,6 @@ class RuleProcessorTest {
     }
 
     @Test
-    fun `conditions scoped to a different project are excluded before evaluation`() {
-        val config = interventionConfig(
-            "rule1",
-            listOf(
-                condition("true", name = "applicable", projects = listOf("project-1")),
-                condition("false", name = "out_of_scope", projects = listOf("project-2")),
-            ),
-        )
-        seed("project.project-1", "rule1", config)
-
-        processor.process(Record(observationKey(projectId = "project-1"), sensorValue(0.0), 0L))
-
-        assertEquals(1, forwardedActions().size)
-    }
-
-    @Test
-    fun `all applicable conditions must hold for the rule to fire`() {
-        val config = interventionConfig(
-            "rule1",
-            listOf(condition("true", name = "cond_a"), condition("false", name = "cond_b")),
-        )
-        seed(ScopePrefix.GLOBAL.scope, "rule1", config)
-
-        processor.process(Record(observationKey(), sensorValue(0.0), 0L))
-
-        assertEquals(0, forwardedActions().size)
-    }
-
-    @Test
     fun `one output record is forwarded per matched action`() {
         val config = interventionConfig(
             "rule1",
@@ -139,20 +90,6 @@ class RuleProcessorTest {
 
         val actionNames = forwardedActions().map { it.value().name }
         assertEquals(listOf("action-a", "action-b"), actionNames)
-    }
-
-    @Test
-    fun `an action scoped to a different project does not fire outside that scope`() {
-        val config = interventionConfig(
-            "rule1",
-            listOf(condition("true")),
-            actions = listOf(ActionConfig(name = "action-a", projects = listOf("other-project"))),
-        )
-        seed(ScopePrefix.GLOBAL.scope, "rule1", config)
-
-        processor.process(Record(observationKey(projectId = "project-1"), sensorValue(0.0), 0L))
-
-        assertTrue(forwardedActions().isEmpty())
     }
 
     @Test

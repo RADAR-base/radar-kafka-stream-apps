@@ -43,8 +43,7 @@ class RuleProcessor(
             if (result) {
                 interventionConfig.actionConfigs
                     .forEach { action -> context().forward(Record(null, action, record.timestamp())) }
-                // TODO: update the tests
-                // TODO: Can we send to different output streams
+                // TODO: Forward to the correct output streams
             }
         }
     }
