@@ -22,11 +22,11 @@ import org.radarbase.stream.ruleengine.domain.RuleGroup
 import java.util.Optional
 import kotlin.test.assertEquals
 
-class RuleProcessorTest {
+class RuleEvaluationProcessorTest {
 
     private lateinit var store: FakeRuleGroupStore
     private lateinit var context: ProcessorContext<GenericRecord, Action>
-    private lateinit var processor: RuleProcessor
+    private lateinit var processor: RuleEvaluationProcessor
 
     @BeforeEach
     fun setUp() {
@@ -46,7 +46,7 @@ class RuleProcessorTest {
         )
         context = mockContext
 
-        processor = RuleProcessor("store-name")
+        processor = RuleEvaluationProcessor("store-name")
         processor.init(context)
     }
 

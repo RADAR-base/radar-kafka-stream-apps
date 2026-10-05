@@ -15,8 +15,8 @@ import org.radarbase.stream.AbstractStreamWorker
 import org.radarbase.stream.StreamDefinition
 import org.radarbase.stream.ruleengine.domain.Action
 import org.radarbase.stream.ruleengine.domain.RuleGroup
-import org.radarbase.stream.ruleengine.processor.RuleGroupProcessor
-import org.radarbase.stream.ruleengine.processor.RuleProcessor
+import org.radarbase.stream.ruleengine.processor.RuleEvaluationProcessor
+import org.radarbase.stream.ruleengine.processor.RuleStoreProcessor
 import org.radarbase.stream.ruleengine.serde.JsonSerde
 import org.radarbase.stream.ruleengine.serde.RuleKeySerde
 import org.radarbase.stream.ruleengine.serde.RuleSerde
@@ -45,10 +45,10 @@ class RuleEngineStream : AbstractStreamWorker() {
                 storeConfig.topic.name,
                 Consumed.with(ruleKeySerde, ruleSerde)
                     .withOffsetResetPolicy(Topology.AutoOffsetReset.EARLIEST),
-                ProcessorSupplier { RuleGroupProcessor(storeConfig.storeName) },
+                ProcessorSupplier { RuleStoreProcessor(storeConfig.storeName) },
             )
             builder.stream<GenericRecord, GenericRecord>(def.inputTopic.name)
-                .process(ProcessorSupplier { RuleProcessor(storeConfig.storeName) })
+                .process(ProcessorSupplier { RuleEvaluationProcessor(storeConfig.storeName) })
                 .to(def.outputTopic.name, Produced.valueSerde(actionSerde))
             val properties = getStreamProperties(
                 this.javaClass,

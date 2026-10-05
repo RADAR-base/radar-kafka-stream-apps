@@ -10,7 +10,7 @@ import org.radarbase.stream.ruleengine.domain.RuleKey
 import org.radarbase.stream.ruleengine.domain.Scoped
 import org.slf4j.LoggerFactory
 
-class RuleGroupProcessor(
+class RuleStoreProcessor(
     val globalStoreName: String,
 ) : Processor<RuleKey, Rule, Void, Void> {
 
@@ -73,7 +73,7 @@ class RuleGroupProcessor(
     }
 
     companion object {
-        private val logger = LoggerFactory.getLogger(RuleGroupProcessor::class.java)
+        private val logger = LoggerFactory.getLogger(RuleStoreProcessor::class.java)
     }
 }
 

@@ -16,10 +16,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class RuleGroupProcessorTest {
+class RuleStoreProcessorTest {
 
     private lateinit var store: FakeRuleGroupStore
-    private lateinit var processor: RuleGroupProcessor
+    private lateinit var processor: RuleStoreProcessor
 
     @BeforeEach
     fun setUp() {
@@ -29,7 +29,7 @@ class RuleGroupProcessorTest {
         val context = mock(ProcessorContext::class.java) as ProcessorContext<Void, Void>
         `when`(context.getStateStore<FakeRuleGroupStore>(any())).thenReturn(store)
 
-        processor = RuleGroupProcessor("store-name")
+        processor = RuleStoreProcessor("store-name")
         processor.init(context)
     }
 

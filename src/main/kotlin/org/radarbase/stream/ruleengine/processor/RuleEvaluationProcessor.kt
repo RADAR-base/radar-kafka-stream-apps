@@ -12,7 +12,7 @@ import org.radarbase.stream.ruleengine.evaluator.ConditionFactory
 import org.slf4j.LoggerFactory
 
 // TODO: deploy on cluster
-class RuleProcessor(
+class RuleEvaluationProcessor(
     val globalStoreName: String,
 ) : ContextualProcessor<GenericRecord, GenericRecord, GenericRecord, Action>() {
 
@@ -67,7 +67,7 @@ class RuleProcessor(
     }
 
     companion object {
-        private val logger = LoggerFactory.getLogger(RuleProcessor::class.java)
+        private val logger = LoggerFactory.getLogger(RuleEvaluationProcessor::class.java)
     }
 
     fun GenericRecord.toCelCompatible(): Map<String, Any?> =
