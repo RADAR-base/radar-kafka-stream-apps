@@ -6,7 +6,7 @@ import org.apache.avro.Schema
 import org.apache.kafka.common.serialization.Deserializer
 import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serializer
-import org.radarbase.config.intervention.InterventionConfig
+import org.radarbase.stream.ruleengine.domain.InterventionConfig
 import org.slf4j.LoggerFactory
 
 // TODO: Should the file avro or schema repo be used?

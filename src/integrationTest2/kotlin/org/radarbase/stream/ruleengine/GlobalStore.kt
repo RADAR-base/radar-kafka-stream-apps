@@ -12,7 +12,7 @@ import org.radarbase.config.SingleStreamConfig
 import org.radarbase.config.intervention.ActionConfig
 import org.radarbase.config.intervention.ConditionConfig
 import org.radarbase.config.intervention.ExpressionType
-import org.radarbase.config.intervention.InterventionConfig
+import org.radarbase.stream.ruleengine.domain.InterventionConfig
 import org.radarbase.stream.StreamMaster
 import org.radarbase.stream.ruleengine.domain.RuleGroup
 import org.radarbase.stream.ruleengine.domain.RuleKey

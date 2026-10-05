@@ -5,7 +5,7 @@ import org.apache.kafka.streams.processor.api.ProcessorContext
 import org.apache.kafka.streams.processor.api.Record
 import org.apache.kafka.streams.state.KeyValueStore
 import org.radarbase.config.intervention.BaseConfig
-import org.radarbase.config.intervention.InterventionConfig
+import org.radarbase.stream.ruleengine.domain.InterventionConfig
 import org.radarbase.stream.ruleengine.domain.RuleGroup
 import org.radarbase.stream.ruleengine.domain.RuleKey
 import org.slf4j.LoggerFactory

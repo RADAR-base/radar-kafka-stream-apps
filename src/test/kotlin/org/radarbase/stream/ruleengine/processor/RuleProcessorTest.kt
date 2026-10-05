@@ -17,11 +17,10 @@ import org.mockito.Mockito.`when`
 import org.radarbase.config.intervention.ActionConfig
 import org.radarbase.config.intervention.ConditionConfig
 import org.radarbase.config.intervention.ExpressionType
-import org.radarbase.config.intervention.InterventionConfig
+import org.radarbase.stream.ruleengine.domain.InterventionConfig
 import org.radarbase.stream.ruleengine.domain.RuleGroup
 import java.util.Optional
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class RuleProcessorTest {
 

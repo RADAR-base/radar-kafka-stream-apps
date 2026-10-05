@@ -9,7 +9,7 @@ import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.ByteArraySerializer
-import org.radarbase.config.intervention.InterventionConfig
+import org.radarbase.stream.ruleengine.domain.InterventionConfig
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.util.Properties
