@@ -1,0 +1,14 @@
+version: 1.0
+released: 2016-11-27
+
+#============================= Application =============================#
+#Possible value are standalone or high_performance
+
+
+#============================ Kafka Streams ============================#
+#The number of threads that a stream must be run according is priority
+stream:
+  threads_per_priority:
+    low: 0
+    normal: 1
+    high: 1

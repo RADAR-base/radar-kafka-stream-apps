@@ -1,0 +1,33 @@
+version: 1.0
+released: 2016-11-27
+
+#============================== Zookeeper ==============================#
+#List of Zookeeper instances
+zookeeper:
+  - host: localhost
+    port: 2181
+
+#================================ Kafka ================================#
+#List of Kafka brokers
+broker:
+  - host: localhost
+    port: 9092
+
+#============================ Kafka Streams ============================#
+#The number of threads that a stream must be run according is priority
+stream:
+  properties:
+    auto.commit.interval.ms: 1000
+    session.timeout.ms: 10000
+
+  threads_per_priority:
+    low: 1
+    normal: 2
+    high: 4
+
+#=========================== Schema Registry ===========================#
+#List of Schema Registry instances
+schema_registry:
+  - host: localhost
+    port: 8081
+    protocol: http
