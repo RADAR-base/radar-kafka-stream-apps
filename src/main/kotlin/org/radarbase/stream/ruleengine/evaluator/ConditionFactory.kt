@@ -9,7 +9,7 @@ import org.radarbase.config.intervention.ExpressionType
  */
 object ConditionFactory {
     @JvmStatic
-    fun getConditionEvaluator(conditionConfig: ConditionConfig): ConditionEvaluator {
+    fun getConditionEvaluator(conditionConfig: ConditionConfig): CelConditionEvaluator {
         return when (conditionConfig.type) {
             CelConditionEvaluator.TYPE_NAME -> CelConditionEvaluator
             else -> throw IllegalArgumentException(

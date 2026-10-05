@@ -6,5 +6,5 @@ package org.radarbase.stream.ruleengine.evaluator
  */
 interface ConditionEvaluator {
 
-    fun isTrueFor(key: Map<*, *>, value: Map<*, *>, expression: String): Boolean
+    fun isTrueFor(key: Map<String, Any?>, value: Map<String, Any?>, expression: String): Boolean
 }

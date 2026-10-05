@@ -6,6 +6,5 @@ import org.radarbase.config.intervention.InterventionConfig
 // key via toString() but has no default KeyDeserializer for an arbitrary data class, so
 // store.get() would throw once a scope has more than one stored rule.
 data class RuleGroup(
-    val rules: MutableMap<String, InterventionConfig> = mutableMapOf(),
+    val rules: Map<String, InterventionConfig> = mapOf(),
 )
-// TODO: make immutable

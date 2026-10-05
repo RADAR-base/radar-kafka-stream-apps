@@ -26,12 +26,11 @@ object CelConditionEvaluator : ConditionEvaluator {
     private val astCache = ConcurrentHashMap<String, CelAbstractSyntaxTree>()
     private val programCache = ConcurrentHashMap<String, CelRuntime.Program>()
 
-    // TODO Can ik Map<*,*> typed maken maar uiteindelijk hoeft getEvaluator gewoon een map krijgen.
 
-    override fun isTrueFor(key: Map<*, *>, value: Map<*, *>, expression: String): Boolean {
+    override fun isTrueFor(key: Map<String, Any?>, value: Map<String, Any?>, expression: String): Boolean {
         logger.debug("Evaluating expression {} against key: {} and value {}", expression, key, value)
 
-        return getEvaluator(expression)?.eval(
+        return getEvaluator(expression).eval(
             mapOf(
                 KEY_MEMBER_NAME to key,
                 VALUE_MEMBER_NAME to value,
@@ -41,7 +40,7 @@ object CelConditionEvaluator : ConditionEvaluator {
         }
     }
 
-    private fun getEvaluator(expression: String): CelRuntime.Program? = programCache.computeIfAbsent(expression) { condition ->
+    private fun getEvaluator(expression: String): CelRuntime.Program = programCache.computeIfAbsent(expression) { condition ->
         val ast = astCache.computeIfAbsent(condition) {
             logger.debug("Compiling CEL expression: {}", condition)
             celCompiler.compile(it).ast

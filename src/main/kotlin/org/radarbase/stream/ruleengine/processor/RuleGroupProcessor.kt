@@ -44,11 +44,8 @@ class RuleGroupProcessor(
             logger.debug("Processing condition {} for rule {}", conditionConfig, key)
 
             conditionConfig.toScopeKeys().forEach { scopeKey ->
-
                 val currentGroup = store.get(scopeKey) ?: RuleGroup()
-                val groupRules = currentGroup.rules
-
-                groupRules[storeKey] = value
+                val groupRules = currentGroup.rules + (storeKey to value)
                 store.put(scopeKey, RuleGroup(groupRules))
                 logger.debug("Added condition key {} for scope {}", key, scopeKey)
             }

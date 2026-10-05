@@ -14,5 +14,5 @@ data class ConditionConfig(
 ) : BaseConfig
 
 enum class ExpressionType(val type: String) {
-    CEL("cel"), //    JSON_PATH(type = "jsonpath"),
+    CEL("cel"),
 }

@@ -114,8 +114,7 @@ class RuleProcessorTest {
     }
 
     private fun seed(scopeKey: String, storeKey: String, config: InterventionConfig) {
-        val rules = store.get(scopeKey)?.rules ?: mutableMapOf()
-        rules[storeKey] = config
+        val rules = store.get(scopeKey)?.rules.orEmpty() + (storeKey to config)
         store.putDirect(scopeKey, RuleGroup(rules))
     }
 
