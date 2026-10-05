@@ -6,7 +6,6 @@ import dev.cel.compiler.CelCompiler
 import dev.cel.compiler.CelCompilerFactory
 import dev.cel.runtime.CelRuntime
 import dev.cel.runtime.CelRuntimeFactory
-import org.apache.avro.generic.GenericRecord
 import org.radarbase.config.intervention.ExpressionType
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
@@ -27,11 +26,11 @@ object CelConditionEvaluator : ConditionEvaluator {
     private val astCache = ConcurrentHashMap<String, CelAbstractSyntaxTree>()
     private val programCache = ConcurrentHashMap<String, CelRuntime.Program>()
 
-    //TODO Can ik Map<*,*> typed maken maar uiteindelijk hoeft getEvaluator gewoon een map krijgen.
+    // TODO Can ik Map<*,*> typed maken maar uiteindelijk hoeft getEvaluator gewoon een map krijgen.
 
-    //TODO: kunnen we forwarden naar specifike output topic. Anders naar 1
-    //TODO: forwarden naar specifiek topic
-    //todo: Nieuwe repo toe.
+    // TODO: kunnen we forwarden naar specifike output topic. Anders naar 1
+    // TODO: forwarden naar specifiek topic
+    // todo: Nieuwe repo toe.
     override fun isTrueFor(key: Map<*, *>, value: Map<*, *>, expression: String): Boolean {
         logger.debug("Evaluating expression {} against key: {} and value {}", expression, key, value)
 

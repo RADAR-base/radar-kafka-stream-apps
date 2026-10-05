@@ -42,6 +42,12 @@ radarKotlin {
     openTelemetryAgentEnabled.set(false)
 }
 
+ktlint {
+    filter {
+        exclude { it.file.path.contains("${File.separator}build${File.separator}generated${File.separator}") }
+    }
+}
+
 application {
     mainClass.set("org.radarbase.RadarBackend")
 }

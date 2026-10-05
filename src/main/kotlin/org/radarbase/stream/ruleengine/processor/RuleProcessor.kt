@@ -47,14 +47,13 @@ class RuleProcessor(
                 // TODO: Can we send to different output streams
             }
         }
-
     }
 
     private fun evaluateRule(
         interventionConfig: InterventionConfig,
         recordKey: Map<String, Any?>,
         recordValue: Map<String, Any?>,
-    ):Boolean {
+    ): Boolean {
         val applicableConditions = interventionConfig.conditionConfigs
         try {
             return applicableConditions.any { condition ->
@@ -62,7 +61,7 @@ class RuleProcessor(
                 evaluator.isTrueFor(recordKey, recordValue, condition.expression)
             }
         } catch (e: Exception) {
-            logger.warn("Failed to evaluate rule {}: {}", interventionConfig.name ,e.message)
+            logger.warn("Failed to evaluate rule {}: {}", interventionConfig.name, e.message)
             return false
         }
     }
@@ -81,5 +80,3 @@ class RuleProcessor(
         else -> this
     }
 }
-
-
