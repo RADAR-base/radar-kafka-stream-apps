@@ -9,7 +9,7 @@ import org.apache.kafka.common.serialization.Serializer
 import org.radarbase.config.intervention.InterventionConfig
 import org.slf4j.LoggerFactory
 
-//TODO: Should the file avro or schema repo be used?
+// TODO: Should the file avro or schema repo be used?
 private val VALUE_SCHEMA: Schema = Schema.Parser().parse(
     """
     {

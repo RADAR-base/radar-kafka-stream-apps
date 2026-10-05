@@ -6,7 +6,7 @@ import org.apache.kafka.common.serialization.Serde
 import org.apache.kafka.common.serialization.Serializer
 import org.radarbase.stream.ruleengine.domain.RuleKey
 
-//TODO: should the central schema repository be used?
+// TODO: should the central schema repository be used?
 private val KEY_SCHEMA: Schema = Schema.Parser().parse(
     """
     {

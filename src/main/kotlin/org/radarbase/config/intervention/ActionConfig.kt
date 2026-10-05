@@ -4,7 +4,7 @@ data class ActionConfig(
     // 'name' must match defined nomenclature recognizable by consumers.
     override val name: String,
     override val properties: Map<String, Any>? = null,
-    override val projects: List<String>? = null, //TODO: implement the rule overrides.
+    override val projects: List<String>? = null, // TODO: implement the rule overrides.
     override val subjects: List<String>? = null,
     override val projectIdField: String? = null,
     override val subjectIdField: String? = null,
