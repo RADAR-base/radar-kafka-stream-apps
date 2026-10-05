@@ -12,7 +12,7 @@ fi
 
 max_timeout=32
 
-# TODO add logic to check the number of active Kafka nodes.
+# TODO add logic to check the number of active Kafka nodes. Find out where this is used
 
 tries=10
 timeout=1
