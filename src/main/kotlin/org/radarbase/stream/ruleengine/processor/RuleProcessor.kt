@@ -70,8 +70,8 @@ class RuleProcessor(
         private val logger = LoggerFactory.getLogger(RuleProcessor::class.java)
     }
 
-    fun GenericRecord.toCelCompatible(): Map<String, Any> =
-        this.schema.fields.associate { it.name() to this.get(it.pos()).toCelCompatible() }
+    fun GenericRecord.toCelCompatible(): Map<String, Any?> =
+        this.schema.fields.associate { it.name() to this.get(it.pos())?.toCelCompatible() }
 
     fun Any.toCelCompatible(): Any = when (this) {
         is CharSequence -> this.toString() // Converts Avro Utf8 to java.lang.String
