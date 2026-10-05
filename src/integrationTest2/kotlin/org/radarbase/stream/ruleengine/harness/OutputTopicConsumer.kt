@@ -18,7 +18,7 @@ object OutputTopicConsumer {
         bootstrapServers: String,
         topic: String,
         minCount: Int,
-        timeout: Duration = Duration.ofSeconds(30),
+        timeout: Duration = Duration.ofSeconds(1),
         decodeValue: (ByteArray) -> V,
     ): List<V> {
         val props = Properties().apply {

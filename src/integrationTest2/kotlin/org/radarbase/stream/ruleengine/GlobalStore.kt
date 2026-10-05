@@ -25,7 +25,6 @@ import org.radarbase.stream.ruleengine.harness.StateStoreQueries
 import org.radarbase.stream.ruleengine.harness.StreamReadiness
 import org.radarbase.stream.ruleengine.processor.ScopePrefix
 import java.nio.file.Path
-import java.time.Duration
 import java.util.UUID
 import java.util.stream.Stream
 
@@ -36,10 +35,7 @@ class GlobalStore {
 
     @AfterEach
     fun tearDown() {
-        // RuleEngineStream.doCleanup() is an unimplemented
-        // plan), so worker.shutdown() would throw here. Close the underlying KafkaStreams
-        // instances directly instead of going through shutdown()/closeStreams().
-        workers.forEach { worker -> worker.kafkaStreamsInstances?.forEach { it.close(Duration.ofSeconds(10)) } }
+        workers.forEach { worker -> worker.shutdown() }
     }
 
     @Test

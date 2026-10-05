@@ -12,7 +12,7 @@ object StreamReadiness {
     private val POLL_INTERVAL: Duration = Duration.ofMillis(100)
     private val TERMINAL_STATES = setOf(KafkaStreams.State.ERROR, KafkaStreams.State.PENDING_SHUTDOWN, KafkaStreams.State.NOT_RUNNING)
 
-    fun awaitRunning(streams: List<KafkaStreams>, timeout: Duration = Duration.ofSeconds(30)) {
+    fun awaitRunning(streams: List<KafkaStreams>, timeout: Duration = Duration.ofSeconds(1)) {
         streams.forEach { awaitRunning(it, timeout) }
     }
 

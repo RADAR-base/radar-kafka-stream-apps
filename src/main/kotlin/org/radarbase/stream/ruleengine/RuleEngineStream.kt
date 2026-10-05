@@ -22,6 +22,7 @@ import org.radarbase.stream.ruleengine.serde.JsonSerde
 import org.radarbase.stream.ruleengine.serde.RuleKeySerde
 import org.radarbase.topic.KafkaTopic
 import org.radarbase.util.getStreamProperties
+import java.time.Duration
 
 /**
  * Definition of Kafka Stream for aggregating data collected by Empatica E4 Accelerometer sensor.
@@ -70,7 +71,7 @@ class RuleEngineStream : AbstractStreamWorker() {
     }
 
     override fun doCleanup() {
-        TODO("Not yet implemented")
+        kafkaStreamsInstances?.forEach { it.close(Duration.ofSeconds(1)) }
     }
 
     /*

@@ -30,6 +30,7 @@ abstract class AbstractStreamWorker : StreamWorker, StreamsUncaughtExceptionHand
     val kafkaStreamsInstances: List<KafkaStreams>?
         get() = streams
 
+    // TODO: remove unused code.
     protected fun defineStream(input: String, output: String) {
         defineStream(input, output, null)
     }

@@ -43,7 +43,7 @@ class ActionForwarding {
 
     @AfterEach
     fun tearDown() {
-        workers.forEach { worker -> worker.kafkaStreamsInstances?.forEach { it.close(Duration.ofSeconds(1)) } }
+        workers.forEach { worker -> worker.shutdown() }
     }
 
     @Test
@@ -63,7 +63,7 @@ class ActionForwarding {
         )
 
         val streams = startWorker(topics, stateDir, schemaRegistryUrl)
-        StreamReadiness.awaitRunning(listOf(streams), Duration.ofSeconds(1))
+        StreamReadiness.awaitRunning(listOf(streams))
 
         publishSensorRecord(topics.inputTopic, schemaRegistryUrl, projectId = "project-1", time = 130.0)
         publishSensorRecord(topics.inputTopic, schemaRegistryUrl, projectId = "project-1", time = 90.0)
@@ -72,7 +72,6 @@ class ActionForwarding {
             bootstrapServers = KafkaBroker.bootstrapServers,
             topic = topics.outputTopic,
             minCount = 1,
-            timeout = Duration.ofSeconds(1),
         ) { bytes -> mapper.readValue(bytes, ActionConfig::class.java) }
 
         assertEquals(listOf(ActionConfig(name = "notify")), actions)
@@ -95,7 +94,7 @@ class ActionForwarding {
         )
 
         val streams = startWorker(topics, stateDir, schemaRegistryUrl)
-        StreamReadiness.awaitRunning(listOf(streams), Duration.ofSeconds(1))
+        StreamReadiness.awaitRunning(listOf(streams))
 
         publishSensorRecord(topics.inputTopic, schemaRegistryUrl, projectId = "project-1", time = 90.0)
 
@@ -103,7 +102,6 @@ class ActionForwarding {
             bootstrapServers = KafkaBroker.bootstrapServers,
             topic = topics.outputTopic,
             minCount = 1,
-            timeout = Duration.ofSeconds(1),
         ) { bytes -> mapper.readValue(bytes, ActionConfig::class.java) }
 
         assertTrue(actions.isEmpty(), "Expected no actions to be forwarded for a non-matching record, got $actions")
