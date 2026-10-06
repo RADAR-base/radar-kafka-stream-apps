@@ -23,7 +23,7 @@ import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.errors.LogAndContinueExceptionHandler
 import java.util.*
 
-class KafkaProperty(private val radarBackendConfig: RadarBackendConfig) {
+class KafkaProperty(private val streamApplicationsConfig: StreamApplicationsConfig) {
 
     /**
      * @param clientId useful for debugging
@@ -36,11 +36,11 @@ class KafkaProperty(private val radarBackendConfig: RadarBackendConfig) {
     ): Properties {
         val props = Properties()
 
-        val streamConfig = radarBackendConfig.stream ?: throw IllegalStateException("Stream configuration is missing")
+        val streamConfig = streamApplicationsConfig.stream ?: throw IllegalStateException("Stream configuration is missing")
 
         props[StreamsConfig.APPLICATION_ID_CONFIG] = clientId
-        props[StreamsConfig.BOOTSTRAP_SERVERS_CONFIG] = radarBackendConfig.brokerPaths
-        props[AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG] = radarBackendConfig.schemaRegistryPaths
+        props[StreamsConfig.BOOTSTRAP_SERVERS_CONFIG] = streamApplicationsConfig.brokerPaths
+        props[AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG] = streamApplicationsConfig.schemaRegistryPaths
         props[StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG] = SpecificAvroSerde::class.java
         props[StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG] = SpecificAvroSerde::class.java
         props[StreamsConfig.NUM_STREAM_THREADS_CONFIG] = streamConfig.threadsByPriority(singleStreamConfig.priority)

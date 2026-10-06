@@ -4,9 +4,9 @@ import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.errors.StreamsException
 import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler
 import org.radarbase.config.KafkaProperty
-import org.radarbase.config.RadarBackendConfig
 import org.radarbase.config.RadarConfigHandler
 import org.radarbase.config.SingleStreamConfig
+import org.radarbase.config.StreamApplicationsConfig
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.stream.Stream
@@ -19,7 +19,7 @@ import java.util.stream.Stream
 abstract class AbstractStreamWorker : StreamWorker, StreamsUncaughtExceptionHandler {
     internal val streamDefinitions = CopyOnWriteArrayList<StreamDefinition>()
     protected lateinit var config: SingleStreamConfig
-    protected lateinit var allConfig: RadarBackendConfig
+    protected lateinit var allConfig: StreamApplicationsConfig
     protected lateinit var kafkaProperty: KafkaProperty
     protected lateinit var master: StreamMaster
     protected var streams: List<KafkaStreams>? = null

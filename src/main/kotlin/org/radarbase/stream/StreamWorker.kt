@@ -5,7 +5,7 @@ import org.radarbase.config.SingleStreamConfig
 import java.util.stream.Stream
 
 /**
- * Interface for any Kafka stream worker in the RADAR-Backend.
+ * Interface for any Kafka stream worker in Radar-Kafka-Stream-Applications.
  * It defines the core lifecycle and configuration methods for processing data from Kafka topics.
  */
 interface StreamWorker {

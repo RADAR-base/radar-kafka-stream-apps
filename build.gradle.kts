@@ -50,7 +50,7 @@ ktlint {
 }
 
 application {
-    mainClass.set("org.radarbase.RadarBackend")
+    mainClass.set("org.radarbase.StreamApplications")
 }
 
 dependencies {

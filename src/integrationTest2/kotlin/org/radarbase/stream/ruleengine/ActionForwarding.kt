@@ -52,7 +52,7 @@ class ActionForwarding {
         val topics = Topics.unique()
         val schemaRegistryUrl = "mock://${topics.globalStoreName}"
 
-        val ruleKey = RuleKey(clientId = "radar-backend-it", scope = "config", name = "high_heart_rate")
+        val ruleKey = RuleKey(clientId = "radar-kafka-stream-apps-it", scope = "config", name = "high_heart_rate")
         val config = rule(name = "high_heart_rate", expression = "value.time > 120.0")
 
         KafkaTopics.createTopics(KafkaBroker.bootstrapServers, topics.inputTopic, topics.outputTopic, topics.globalStoreTopic)
@@ -84,7 +84,7 @@ class ActionForwarding {
         val topics = Topics.unique()
         val schemaRegistryUrl = "mock://${topics.globalStoreName}"
 
-        val ruleKey = RuleKey(clientId = "radar-backend-it", scope = "config", name = "high_heart_rate")
+        val ruleKey = RuleKey(clientId = "radar-kafka-stream-apps-it", scope = "config", name = "high_heart_rate")
         val config = rule(name = "high_heart_rate", expression = "value.time > 120.0")
 
         KafkaTopics.createTopics(KafkaBroker.bootstrapServers, topics.inputTopic, topics.outputTopic, topics.globalStoreTopic)

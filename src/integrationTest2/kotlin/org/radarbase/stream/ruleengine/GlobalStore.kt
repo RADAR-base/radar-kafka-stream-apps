@@ -42,7 +42,7 @@ class GlobalStore {
     @Test
     fun `global store is populated from a global-scope rule`(@TempDir stateDir: Path) {
         val topics = Topics.unique()
-        val ruleKey = RuleKey(clientId = "radar-backend-it", scope = "config", name = "high_heart_rate")
+        val ruleKey = RuleKey(clientId = "radar-kafka-stream-apps-it", scope = "config", name = "high_heart_rate")
         val config = rule(name = "high_heart_rate", topic = topics.outputTopic, expression = "value.heartRate > 120")
 
         publish(topics, id = 1, ruleKey = ruleKey, config = config)
@@ -59,7 +59,7 @@ class GlobalStore {
     @Test
     fun `global store restore survives malformed legacy JSON and keeps the later well-formed record`(@TempDir stateDir: Path) {
         val topics = Topics.unique()
-        val ruleKey = RuleKey(clientId = "radar-backend-it", scope = "project.test-questionnaire", name = "rule4")
+        val ruleKey = RuleKey(clientId = "radar-kafka-stream-apps-it", scope = "project.test-questionnaire", name = "rule4")
         val config = rule(name = "rule4", topic = topics.outputTopic, expression = "value.heartRate > 120")
 
         val malformedJson = """

@@ -22,7 +22,7 @@ import org.apache.commons.cli.Options
 import org.apache.commons.cli.ParseException
 import org.slf4j.LoggerFactory
 
-class RadarBackendCliOptions(private val cli: CommandLine) {
+class StreamApplicationsCliOptions(private val cli: CommandLine) {
     val subCommand: String?
     val subCommandArgs: Array<String>?
 
@@ -42,14 +42,14 @@ class RadarBackendCliOptions(private val cli: CommandLine) {
         get() = cli.getOptionValue("config")
 
     companion object {
-        private val log = LoggerFactory.getLogger(RadarBackendCliOptions::class.java)
+        private val log = LoggerFactory.getLogger(StreamApplicationsCliOptions::class.java)
         val OPTIONS: Options = Options()
             .addOption("c", "config", true, "Configuration YAML file")
 
         @Throws(ParseException::class)
-        fun parse(args: Array<String>): RadarBackendCliOptions {
+        fun parse(args: Array<String>): StreamApplicationsCliOptions {
             val cli = DefaultParser().parse(OPTIONS, args)
-            return RadarBackendCliOptions(cli)
+            return StreamApplicationsCliOptions(cli)
         }
     }
 }

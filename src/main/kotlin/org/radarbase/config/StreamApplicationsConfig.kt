@@ -17,7 +17,7 @@ package org.radarbase.config
 
 import com.fasterxml.jackson.annotation.JsonProperty
 
-data class RadarBackendConfig(
+data class StreamApplicationsConfig(
     var broker: List<ServerConfig>? = null,
 
     @param:JsonProperty("schema_registry")

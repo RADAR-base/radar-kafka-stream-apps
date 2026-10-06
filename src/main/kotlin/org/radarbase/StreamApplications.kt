@@ -1,9 +1,9 @@
 package org.radarbase
 
 import org.apache.commons.cli.ParseException
-import org.radarbase.config.BackendProcess
-import org.radarbase.config.RadarBackendCliOptions
 import org.radarbase.config.RadarConfigHandler
+import org.radarbase.config.StreamApplicationsCliOptions
+import org.radarbase.config.StreamApplicationsProcess
 import org.radarbase.stream.KafkaStreamFactory
 import org.radarbase.util.RadarSingletonFactory
 import org.slf4j.LoggerFactory
@@ -13,12 +13,12 @@ import kotlin.system.exitProcess
 /**
  * Core class that initializes configurations and then start configured Kafka streams
  */
-class RadarBackend(
-    private val cliOptions: RadarBackendCliOptions,
+class StreamApplications(
+    private val cliOptions: StreamApplicationsCliOptions,
     private val radarConfigHandler: RadarConfigHandler = createPropertyHandler(cliOptions),
 ) {
 
-    private lateinit var process: BackendProcess
+    private lateinit var process: StreamApplicationsProcess
 
     init {
         logger.info("Configuration successfully updated")
@@ -81,7 +81,7 @@ class RadarBackend(
     }
 
     @Throws(IOException::class)
-    fun createProcess(): BackendProcess {
+    fun createProcess(): StreamApplicationsProcess {
         val cliSubCommand = cliOptions.subCommand ?: "stream"
         return when (cliSubCommand) {
             "stream" -> KafkaStreamFactory(cliOptions, radarConfigHandler).createSensorStreams()
@@ -90,10 +90,10 @@ class RadarBackend(
     }
 
     companion object {
-        private val logger = LoggerFactory.getLogger(RadarBackend::class.java)
+        private val logger = LoggerFactory.getLogger(StreamApplications::class.java)
 
         @Throws(IOException::class)
-        private fun createPropertyHandler(options: RadarBackendCliOptions): RadarConfigHandler {
+        private fun createPropertyHandler(options: StreamApplicationsCliOptions): RadarConfigHandler {
             val properties = RadarSingletonFactory.radarConfigHandler
             properties.load(options.propertyPath)
             return properties
@@ -102,14 +102,14 @@ class RadarBackend(
         @JvmStatic
         fun main(args: Array<String>) {
             try {
-                val options = RadarBackendCliOptions.parse(args)
-                val backend = RadarBackend(options)
-                backend.run()
+                val options = StreamApplicationsCliOptions.parse(args)
+                val streamApplications = StreamApplications(options)
+                streamApplications.run()
             } catch (_: ParseException) {
                 logger.error(
                     "Cannot parse arguments {}. Valid options are:\n{}",
                     args.contentToString(),
-                    RadarBackendCliOptions.OPTIONS,
+                    StreamApplicationsCliOptions.OPTIONS,
                 )
                 exitProcess(1)
             } catch (ex: Exception) {

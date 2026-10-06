@@ -22,11 +22,11 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class RadarBackendOptionsTest {
+class StreamApplicationsCliOptionsTest {
     @Test
     @Throws(ParseException::class)
     fun empty() {
-        val opts = RadarBackendCliOptions.parse(arrayOf())
+        val opts = StreamApplicationsCliOptions.parse(arrayOf())
         assertNull(opts.subCommand)
         assertArrayEquals(emptyArray<String>(), opts.subCommandArgs)
         assertNull(opts.propertyPath)
@@ -35,7 +35,7 @@ class RadarBackendOptionsTest {
     @Test
     @Throws(ParseException::class)
     fun withConfig() {
-        val opts = RadarBackendCliOptions.parse(arrayOf("-c", "cfg"))
+        val opts = StreamApplicationsCliOptions.parse(arrayOf("-c", "cfg"))
         assertNull(opts.subCommand)
         assertArrayEquals(emptyArray<String>(), opts.subCommandArgs)
         assertEquals("cfg", opts.propertyPath)
@@ -44,7 +44,7 @@ class RadarBackendOptionsTest {
     @Test
     @Throws(ParseException::class)
     fun withSubcommand() {
-        val opts = RadarBackendCliOptions.parse(arrayOf("-c", "cfg", "stream"))
+        val opts = StreamApplicationsCliOptions.parse(arrayOf("-c", "cfg", "stream"))
         assertEquals("stream", opts.subCommand)
         assertArrayEquals(arrayOf<String>(), opts.subCommandArgs)
         assertEquals("cfg", opts.propertyPath)
@@ -53,7 +53,7 @@ class RadarBackendOptionsTest {
     @Test
     @Throws(ParseException::class)
     fun withSubcommandArgs() {
-        val opts = RadarBackendCliOptions.parse(arrayOf("monitor", "battery"))
+        val opts = StreamApplicationsCliOptions.parse(arrayOf("monitor", "battery"))
         assertEquals("monitor", opts.subCommand)
         assertArrayEquals(arrayOf("battery"), opts.subCommandArgs)
     }

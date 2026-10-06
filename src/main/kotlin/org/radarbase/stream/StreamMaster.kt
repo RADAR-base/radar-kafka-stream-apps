@@ -1,8 +1,8 @@
 package org.radarbase.stream
 
-import org.radarbase.config.BackendProcess
 import org.radarbase.config.RadarConfigHandler
 import org.radarbase.config.SingleStreamConfig
+import org.radarbase.config.StreamApplicationsProcess
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.util.concurrent.ExecutorService
@@ -20,7 +20,7 @@ import java.util.stream.Stream
 open class StreamMaster(
     propertyHandler: RadarConfigHandler,
     streams: Stream<out SingleStreamConfig>,
-) : BackendProcess, Thread.UncaughtExceptionHandler {
+) : StreamApplicationsProcess, Thread.UncaughtExceptionHandler {
     private val streamWorkers: List<StreamWorker>
     private val currentStream = AtomicInteger(0)
     private lateinit var executor: ExecutorService

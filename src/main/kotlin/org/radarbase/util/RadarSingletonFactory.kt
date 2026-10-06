@@ -20,7 +20,7 @@ import org.radarbase.config.RadarConfigHandler
 import org.radarbase.config.RadarConfigHandlerImpl
 
 /**
- * SingletonFactory of RadarBackend project. This factory composites all singleton objects that need
+ * SingletonFactory of the Radar-Kafka-Stream-Applications project. This factory composites all singleton objects that need
  * to be maintained in this project and provides a gateway to get singleton objects
  */
 object RadarSingletonFactory {

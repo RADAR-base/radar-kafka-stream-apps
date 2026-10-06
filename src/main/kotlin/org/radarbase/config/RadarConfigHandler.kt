@@ -24,7 +24,7 @@ interface RadarConfigHandler {
         LOW("low"), NORMAL("normal"), HIGH("high")
     }
 
-    val radarProperties: RadarBackendConfig
+    val radarProperties: StreamApplicationsConfig
 
     @Throws(IOException::class)
     fun load(pathFile: String?)

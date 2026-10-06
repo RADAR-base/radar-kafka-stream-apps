@@ -17,7 +17,7 @@
 package org.radarbase.config
 
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import org.radarbase.RadarBackend
+import org.radarbase.StreamApplications
 import org.radarbase.radar_kafka_stream_apps.BuildConfig
 import org.slf4j.LoggerFactory
 import java.io.IOException
@@ -30,10 +30,10 @@ import kotlin.io.path.isRegularFile
  * Singleton class for handling the yml config file. Implements [RadarConfigHandler]
  */
 class RadarConfigHandlerImpl : RadarConfigHandler {
-    private var _properties: RadarBackendConfig? = null
+    private var _properties: StreamApplicationsConfig? = null
     private var _kafkaProperty: KafkaProperty? = null
 
-    override val radarProperties: RadarBackendConfig
+    override val radarProperties: StreamApplicationsConfig
         get() = _properties ?: throw IllegalStateException("Properties cannot be accessed without calling load() first")
 
     private fun isLoaded(): Boolean = _properties != null
@@ -56,7 +56,7 @@ class RadarConfigHandlerImpl : RadarConfigHandler {
         require(file.isRegularFile()) { "Config file $file is invalid" }
 
         _properties = YamlConfigLoader { mapper -> mapper.registerKotlinModule() }
-            .load(file, RadarBackendConfig::class.java)
+            .load(file, StreamApplicationsConfig::class.java)
 
         val buildProperties = BuildConfig
         buildProperties.version.let {
@@ -69,7 +69,7 @@ class RadarConfigHandlerImpl : RadarConfigHandler {
         var localFile = Path.of(CONFIG_FILE_NAME)
         if (!localFile.exists()) {
             try {
-                val codePathUrl = RadarBackend::class.java.protectionDomain.codeSource.location
+                val codePathUrl = StreamApplications::class.java.protectionDomain.codeSource.location
                 val codePath = codePathUrl.toURI().path
                 val codeDir = codePath.take(codePath.lastIndexOf('/') + 1)
                 localFile = Path.of(codeDir, CONFIG_FILE_NAME)

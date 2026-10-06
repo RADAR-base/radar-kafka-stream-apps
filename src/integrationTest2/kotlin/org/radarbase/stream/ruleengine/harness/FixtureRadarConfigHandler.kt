@@ -1,23 +1,23 @@
 package org.radarbase.stream.ruleengine.harness
 
 import org.radarbase.config.KafkaProperty
-import org.radarbase.config.RadarBackendConfig
 import org.radarbase.config.RadarConfigHandler
 import org.radarbase.config.ServerConfig
+import org.radarbase.config.StreamApplicationsConfig
 import org.radarbase.config.StreamConfig
 
 class FixtureRadarConfigHandler(
     bootstrapServers: String,
     schemaRegistryUrl: String = "http://unused-schema-registry:1",
 ) : RadarConfigHandler {
-    override val radarProperties: RadarBackendConfig = run {
+    override val radarProperties: StreamApplicationsConfig = run {
         // KafkaContainer.bootstrapServers may or may not carry a "PLAINTEXT://" scheme prefix
         // depending on the Testcontainers version; java.net.URI misparses a bare "host:port" as
         // an opaque URI (scheme="host", no host/port), so split on the last ':' instead.
         val hostPort = bootstrapServers.substringAfter("://")
         val host = hostPort.substringBeforeLast(':')
         val port = hostPort.substringAfterLast(':').toInt()
-        RadarBackendConfig(
+        StreamApplicationsConfig(
             broker = listOf(
                 ServerConfig().apply {
                     this.host = host

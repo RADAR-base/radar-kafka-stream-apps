@@ -19,9 +19,9 @@ package org.radarbase.config
 import java.io.IOException
 
 /**
- * Subcommand of RadarBackend to run.
+ * Subcommand of StreamApplications to run.
  */
-interface BackendProcess {
+interface StreamApplicationsProcess {
     /**
      * Start the process. The process is not guaranteed to return
      * immediately.

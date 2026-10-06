@@ -1,8 +1,8 @@
 package org.radarbase.stream
 
-import org.radarbase.config.RadarBackendCliOptions
 import org.radarbase.config.RadarConfigHandler
 import org.radarbase.config.SingleStreamConfig
+import org.radarbase.config.StreamApplicationsCliOptions
 import java.util.*
 import java.util.stream.Stream
 
@@ -11,7 +11,7 @@ import java.util.stream.Stream
  * It uses the configuration file and CLI options to determine which streams should be instantiated and started.
  */
 class KafkaStreamFactory(
-    private val cliOptions: RadarBackendCliOptions,
+    private val cliOptions: StreamApplicationsCliOptions,
     private val radarProperties: RadarConfigHandler,
 ) {
     fun createSensorStreams(): StreamMaster {
