@@ -21,7 +21,6 @@ import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.errors.LogAndContinueExceptionHandler
-import org.apache.kafka.streams.processor.TimestampExtractor
 import java.util.*
 
 class KafkaProperty(private val radarBackendConfig: RadarBackendConfig) {
@@ -53,22 +52,6 @@ class KafkaProperty(private val radarBackendConfig: RadarBackendConfig) {
 
         props[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
 
-        return props
-    }
-
-    /**
-     * @param clientId useful for debugging
-     * @param singleStreamConfig stream configuration
-     * @param timestampExtractor custom timestamp extract that overrides the out-of-the-box
-     * @return Properties for a Kafka Stream
-     */
-    fun getStreamProperties(
-        clientId: String,
-        singleStreamConfig: SingleStreamConfig,
-        timestampExtractor: Class<out TimestampExtractor>,
-    ): Properties {
-        val props = getStreamProperties(clientId, singleStreamConfig)
-        props[StreamsConfig.DEFAULT_TIMESTAMP_EXTRACTOR_CLASS_CONFIG] = timestampExtractor.name
         return props
     }
 }

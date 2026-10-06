@@ -8,7 +8,6 @@ import org.radarbase.config.RadarBackendConfig
 import org.radarbase.config.RadarConfigHandler
 import org.radarbase.config.SingleStreamConfig
 import org.slf4j.LoggerFactory
-import java.time.Duration
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.stream.Stream
 
@@ -92,9 +91,5 @@ abstract class AbstractStreamWorker : StreamWorker, StreamsUncaughtExceptionHand
 
     companion object {
         private val logger = LoggerFactory.getLogger(AbstractStreamWorker::class.java)
-        const val OUTPUT_LABEL = "_output"
-
-        @JvmField
-        val TIME_WINDOW_COMMIT_INTERVAL_DEFAULT: Duration = Duration.ofSeconds(30)
     }
 }

@@ -8,7 +8,6 @@ import org.radarbase.stream.ruleengine.domain.ExpressionType
  * provided for the given consumer.
  */
 object ConditionFactory {
-    @JvmStatic
     fun getConditionEvaluator(condition: Condition): CelConditionEvaluator {
         return when (condition.type) {
             CelConditionEvaluator.TYPE_NAME -> CelConditionEvaluator

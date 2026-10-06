@@ -5,8 +5,8 @@ import org.radarbase.config.RadarConfigHandler
 import org.radarbase.config.SingleStreamConfig
 import org.slf4j.LoggerFactory
 import java.io.IOException
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.stream.Collectors
@@ -23,7 +23,7 @@ open class StreamMaster(
 ) : BackendProcess, Thread.UncaughtExceptionHandler {
     private val streamWorkers: List<StreamWorker>
     private val currentStream = AtomicInteger(0)
-    private lateinit var executor: ScheduledExecutorService
+    private lateinit var executor: ExecutorService
 
     init {
         streamWorkers = streams
@@ -62,7 +62,7 @@ open class StreamMaster(
 
     @Throws(IOException::class)
     override fun start() {
-        executor = Executors.newSingleThreadScheduledExecutor()
+        executor = Executors.newSingleThreadExecutor()
         executor.execute { Thread.currentThread().uncaughtExceptionHandler = this }
 
         announceTopics()

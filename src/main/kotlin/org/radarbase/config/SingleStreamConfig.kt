@@ -18,10 +18,4 @@ open class SingleStreamConfig {
     protected fun setPriority(priority: String) {
         this.priority = RadarConfigHandler.Priority.valueOf(priority.uppercase(Locale.US))
     }
-
-    fun setDefaultPriority(priority: RadarConfigHandler.Priority) {
-        if (this.priority == RadarConfigHandler.Priority.NORMAL) {
-            this.priority = priority
-        }
-    }
 }

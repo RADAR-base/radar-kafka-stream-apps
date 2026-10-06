@@ -1,7 +1,6 @@
 package org.radarbase.stream.ruleengine
 
 import org.apache.avro.generic.GenericRecord
-import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsBuilder
@@ -50,16 +49,7 @@ class RuleEngineStream : AbstractStreamWorker() {
             builder.stream<GenericRecord, GenericRecord>(def.inputTopic.name)
                 .process(ProcessorSupplier { RuleEvaluationProcessor(storeConfig.storeName) })
                 .to(def.outputTopic.name, Produced.valueSerde(actionSerde))
-            val properties = getStreamProperties(
-                this.javaClass,
-                def,
-                config,
-                allConfig,
-                kafkaProperty,
-                null,
-            ).apply {
-                put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
-            }
+            val properties = getStreamProperties(this.javaClass, config, allConfig, kafkaProperty)
             KafkaStreams(builder.build(), properties)
         }
     }

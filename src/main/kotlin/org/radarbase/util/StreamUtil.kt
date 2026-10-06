@@ -1,48 +1,25 @@
 package org.radarbase.util
 
 import org.apache.kafka.streams.StreamsConfig
-import org.apache.kafka.streams.processor.TimestampExtractor
 import org.radarbase.config.KafkaProperty
 import org.radarbase.config.RadarBackendConfig
 import org.radarbase.config.SingleStreamConfig
-import org.radarbase.stream.StreamDefinition
+import java.time.Duration
 import java.util.*
 import java.util.concurrent.ThreadLocalRandom
 
+private val COMMIT_INTERVAL: Duration = Duration.ofSeconds(30)
+
 internal fun getStreamProperties(
     clazz: Class<*>,
-    definition: StreamDefinition,
     streamConfig: SingleStreamConfig,
     config: RadarBackendConfig,
     kafkaProperty: KafkaProperty,
-    timeStampExtractorClass: Class<out TimestampExtractor>? = null,
 ): Properties {
-    val localClientId = buildString {
-        append(clazz.name)
-        append("-")
-        append(config.buildVersion)
-        definition.timeWindows?.let {
-            append("-")
-            append(it.sizeMs)
-            append("-")
-            append(it.advanceMs)
-        }
-    }
+    val localClientId = "${clazz.name}-${config.buildVersion}"
+    val props = kafkaProperty.getStreamProperties(localClientId, streamConfig)
 
-    val props = if (timeStampExtractorClass != null) {
-        kafkaProperty.getStreamProperties(
-            localClientId,
-            streamConfig,
-            timeStampExtractorClass,
-        )
-    } else {
-        kafkaProperty.getStreamProperties(
-            localClientId,
-            streamConfig,
-        )
-    }
-
-    val interval = (ThreadLocalRandom.current().nextDouble(0.75, 1.25) * definition.commitInterval.toMillis()).toLong()
+    val interval = (ThreadLocalRandom.current().nextDouble(0.75, 1.25) * COMMIT_INTERVAL.toMillis()).toLong()
 
     props[StreamsConfig.COMMIT_INTERVAL_MS_CONFIG] = interval.toString()
 

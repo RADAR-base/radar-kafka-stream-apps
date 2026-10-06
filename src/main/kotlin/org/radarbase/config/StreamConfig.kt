@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonSetter
 import org.radarbase.config.ConfigUtils.Companion.withEnvVars
-import java.time.Duration
 import java.util.*
 
 @Suppress("PMD.ImmutableField")
@@ -14,12 +13,6 @@ class StreamConfig {
     @JsonIgnore
     private val priorityThreads: MutableMap<RadarConfigHandler.Priority, Int> =
         EnumMap(RadarConfigHandler.Priority::class.java)
-
-    @JsonProperty("min_commit_interval")
-    var minCommitInterval: Long = 10
-
-    @JsonProperty("max_commit_interval")
-    var maxCommitInterval: Long = Duration.ofHours(3).seconds
 
     @JsonProperty
     var properties: Map<String, String>? = null

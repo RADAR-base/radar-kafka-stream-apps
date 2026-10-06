@@ -1,12 +1,3 @@
-version: 1.0
-released: 2016-11-27
-
-#============================== Zookeeper ==============================#
-#List of Zookeeper instances
-zookeeper:
-  - host: localhost
-    port: 2181
-
 #================================ Kafka ================================#
 #List of Kafka brokers
 broker:
@@ -43,8 +34,3 @@ schema_registry:
   - host: localhost
     port: 8081
     protocol: http
-
-rest_proxy:
-  host: radar-test.thehyve.net
-  port: 8082
-  protocol: http

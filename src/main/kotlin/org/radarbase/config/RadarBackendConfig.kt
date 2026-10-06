@@ -16,32 +16,19 @@
 package org.radarbase.config
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import java.util.*
 
 data class RadarBackendConfig(
-    var released: Date? = null,
-    var version: String? = null,
-    var zookeeper: List<ServerConfig>? = null,
     var broker: List<ServerConfig>? = null,
 
     @param:JsonProperty("schema_registry")
     var schemaRegistry: List<ServerConfig>? = null,
 
-    @param:JsonProperty("rest_proxy")
-    var restProxy: ServerConfig? = null,
-
     @param:JsonProperty("stream")
     var stream: StreamConfig? = null,
-
-    var extras: Map<String, Any>? = null,
 
     @param:JsonProperty("build_version")
     var buildVersion: String? = null,
 ) {
-    val zookeeperPaths: String
-        get() = zookeeper?.let { ServerConfig.getPaths(it) }
-            ?: throw IllegalStateException("'zookeeper' is not configured")
-
     val brokerPaths: String
         get() = broker?.let { ServerConfig.getPaths(it) }
             ?: throw IllegalStateException("Kafka 'broker' is not configured")

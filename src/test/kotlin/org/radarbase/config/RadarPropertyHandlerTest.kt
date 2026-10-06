@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class RadarPropertyHandlerTest {
@@ -56,15 +55,8 @@ class RadarPropertyHandlerTest {
         val properties = configHandler.radarProperties
         assertNotNull(properties.broker)
         assertNotNull(properties.brokerPaths)
-        assertNotNull(properties.released)
         assertNotNull(properties.schemaRegistry)
         assertNotNull(properties.schemaRegistryPaths)
-        assertNotNull(properties.zookeeper)
-        assertNotNull(properties.zookeeperPaths)
-        assertNotNull(properties.version)
-        assertNotNull(properties.extras)
-        assert(properties.extras!!.containsKey("somethingother"))
-        assertEquals("bla", properties.extras!!["somethingother"])
     }
 
     @Test

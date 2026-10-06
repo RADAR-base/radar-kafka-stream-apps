@@ -13,6 +13,6 @@ data class Condition(
     override val timeField: String? = null,
 ) : Scoped
 
-enum class ExpressionType(val type: String) {
-    CEL("cel"),
+enum class ExpressionType {
+    CEL,
 }
