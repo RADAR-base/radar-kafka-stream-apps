@@ -52,15 +52,15 @@ class ActionForwarding {
         val topics = Topics.unique()
         val schemaRegistryUrl = "mock://${topics.globalStoreName}"
 
-        val ruleKey = RuleKey(clientId = "radar-kafka-stream-apps-it", scope = "config", name = "high_heart_rate")
+        val ruleKey = RuleKey(scope = "config", name = "high_heart_rate")
         val config = rule(name = "high_heart_rate", expression = "value.time > 120.0")
 
         KafkaTopics.createTopics(KafkaBroker.bootstrapServers, topics.inputTopic, topics.outputTopic, topics.globalStoreTopic)
         RuleEngineConfigFixtures.publish(
             KafkaBroker.bootstrapServers,
             topics.globalStoreTopic,
-            RuleEngineConfigFixtures.key(ruleKey.clientId, ruleKey.scope, ruleKey.name),
-            RuleEngineConfigFixtures.value(id = 1, clientId = ruleKey.clientId, scope = ruleKey.scope, name = ruleKey.name, config = config),
+            RuleEngineConfigFixtures.key(ruleKey.scope, ruleKey.name),
+            RuleEngineConfigFixtures.value(id = 1, scope = ruleKey.scope, name = ruleKey.name, config = config),
         )
 
         val streams = startWorker(topics, stateDir, schemaRegistryUrl)
@@ -84,15 +84,15 @@ class ActionForwarding {
         val topics = Topics.unique()
         val schemaRegistryUrl = "mock://${topics.globalStoreName}"
 
-        val ruleKey = RuleKey(clientId = "radar-kafka-stream-apps-it", scope = "config", name = "high_heart_rate")
+        val ruleKey = RuleKey(scope = "config", name = "high_heart_rate")
         val config = rule(name = "high_heart_rate", expression = "value.time > 120.0")
 
         KafkaTopics.createTopics(KafkaBroker.bootstrapServers, topics.inputTopic, topics.outputTopic, topics.globalStoreTopic)
         RuleEngineConfigFixtures.publish(
             KafkaBroker.bootstrapServers,
             topics.globalStoreTopic,
-            RuleEngineConfigFixtures.key(ruleKey.clientId, ruleKey.scope, ruleKey.name),
-            RuleEngineConfigFixtures.value(id = 1, clientId = ruleKey.clientId, scope = ruleKey.scope, name = ruleKey.name, config = config),
+            RuleEngineConfigFixtures.key(ruleKey.scope, ruleKey.name),
+            RuleEngineConfigFixtures.value(id = 1, scope = ruleKey.scope, name = ruleKey.name, config = config),
         )
 
         val streams = startWorker(topics, stateDir, schemaRegistryUrl)

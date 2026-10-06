@@ -14,7 +14,6 @@ private val KEY_SCHEMA: Schema = Schema.Parser().parse(
       "name": "AppConfigKey",
       "namespace": "org.radarbase.stream.ruleengine.avro",
       "fields": [
-        {"name": "client_id", "type": ["null", "string"], "default": null},
         {"name": "scope", "type": ["null", "string"], "default": null},
         {"name": "name", "type": ["null", "string"], "default": null}
       ]
@@ -31,7 +30,6 @@ class RuleKeySerde : Serde<RuleKey> {
         data?.let {
             val record = avroSerde.decode(it)
             RuleKey(
-                clientId = record["client_id"]?.toString().orEmpty(),
                 scope = record["scope"]?.toString().orEmpty(),
                 name = record["name"]?.toString().orEmpty(),
             )

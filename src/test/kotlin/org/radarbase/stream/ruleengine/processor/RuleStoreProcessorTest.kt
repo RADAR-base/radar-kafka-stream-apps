@@ -99,7 +99,7 @@ class RuleStoreProcessorTest {
         )
     }
 
-    private fun ruleKey(name: String) = RuleKey(clientId = "client", scope = "config", name = name)
+    private fun ruleKey(name: String) = RuleKey(scope = "config", name = name)
 
     private fun rule(
         name: String,

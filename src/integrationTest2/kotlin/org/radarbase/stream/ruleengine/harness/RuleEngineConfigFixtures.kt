@@ -25,7 +25,6 @@ object RuleEngineConfigFixtures {
           "name": "AppConfigKey",
           "namespace": "org.radarbase.stream.ruleengine.avro",
           "fields": [
-            {"name": "client_id", "type": ["null", "string"], "default": null},
             {"name": "scope", "type": ["null", "string"], "default": null},
             {"name": "name", "type": ["null", "string"], "default": null}
           ]
@@ -41,7 +40,6 @@ object RuleEngineConfigFixtures {
           "namespace": "org.radarbase.stream.ruleengine.avro",
           "fields": [
             {"name": "id", "type": "int"},
-            {"name": "client_id", "type": ["null", "string"], "default": null},
             {"name": "scope", "type": ["null", "string"], "default": null},
             {"name": "name", "type": ["null", "string"], "default": null},
             {"name": "value", "type": ["null", "string"], "default": null},
@@ -64,23 +62,21 @@ object RuleEngineConfigFixtures {
         return out.toByteArray()
     }
 
-    fun key(clientId: String, scope: String, name: String): ByteArray = encode(
+    fun key(scope: String, name: String): ByteArray = encode(
         KEY_SCHEMA,
         GenericData.Record(KEY_SCHEMA).apply {
-            put("client_id", clientId)
             put("scope", scope)
             put("name", name)
         },
     )
 
-    fun value(id: Int, clientId: String, scope: String, name: String, config: Rule): ByteArray =
-        valueRaw(id, clientId, scope, name, mapper.writeValueAsString(config))
+    fun value(id: Int, scope: String, name: String, config: Rule): ByteArray =
+        valueRaw(id, scope, name, mapper.writeValueAsString(config))
 
-    fun valueRaw(id: Int, clientId: String, scope: String, name: String, rawJson: String?): ByteArray = encode(
+    fun valueRaw(id: Int, scope: String, name: String, rawJson: String?): ByteArray = encode(
         VALUE_SCHEMA,
         GenericData.Record(VALUE_SCHEMA).apply {
             put("id", id)
-            put("client_id", clientId)
             put("scope", scope)
             put("name", name)
             put("value", rawJson)

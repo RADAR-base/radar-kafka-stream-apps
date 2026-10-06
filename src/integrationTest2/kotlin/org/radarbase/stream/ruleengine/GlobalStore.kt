@@ -42,7 +42,7 @@ class GlobalStore {
     @Test
     fun `global store is populated from a global-scope rule`(@TempDir stateDir: Path) {
         val topics = Topics.unique()
-        val ruleKey = RuleKey(clientId = "radar-kafka-stream-apps-it", scope = "config", name = "high_heart_rate")
+        val ruleKey = RuleKey(scope = "config", name = "high_heart_rate")
         val config = rule(name = "high_heart_rate", topic = topics.outputTopic, expression = "value.heartRate > 120")
 
         publish(topics, id = 1, ruleKey = ruleKey, config = config)
@@ -59,7 +59,7 @@ class GlobalStore {
     @Test
     fun `global store restore survives malformed legacy JSON and keeps the later well-formed record`(@TempDir stateDir: Path) {
         val topics = Topics.unique()
-        val ruleKey = RuleKey(clientId = "radar-kafka-stream-apps-it", scope = "project.test-questionnaire", name = "rule4")
+        val ruleKey = RuleKey(scope = "project.test-questionnaire", name = "rule4")
         val config = rule(name = "rule4", topic = topics.outputTopic, expression = "value.heartRate > 120")
 
         val malformedJson = """
@@ -70,14 +70,14 @@ class GlobalStore {
         RuleEngineConfigFixtures.publish(
             KafkaBroker.bootstrapServers,
             topics.globalStoreTopic,
-            RuleEngineConfigFixtures.key(ruleKey.clientId, ruleKey.scope, ruleKey.name),
-            RuleEngineConfigFixtures.valueRaw(id = 1, clientId = ruleKey.clientId, scope = ruleKey.scope, name = ruleKey.name, rawJson = malformedJson),
+            RuleEngineConfigFixtures.key(ruleKey.scope, ruleKey.name),
+            RuleEngineConfigFixtures.valueRaw(id = 1, scope = ruleKey.scope, name = ruleKey.name, rawJson = malformedJson),
         )
         RuleEngineConfigFixtures.publish(
             KafkaBroker.bootstrapServers,
             topics.globalStoreTopic,
-            RuleEngineConfigFixtures.key(ruleKey.clientId, ruleKey.scope, ruleKey.name),
-            RuleEngineConfigFixtures.value(id = 2, clientId = ruleKey.clientId, scope = ruleKey.scope, name = ruleKey.name, config = config),
+            RuleEngineConfigFixtures.key(ruleKey.scope, ruleKey.name),
+            RuleEngineConfigFixtures.value(id = 2, scope = ruleKey.scope, name = ruleKey.name, config = config),
         )
 
         val streams = startWorker(topics, stateDir)
@@ -95,8 +95,8 @@ class GlobalStore {
         RuleEngineConfigFixtures.publish(
             KafkaBroker.bootstrapServers,
             topics.globalStoreTopic,
-            RuleEngineConfigFixtures.key(ruleKey.clientId, ruleKey.scope, ruleKey.name),
-            RuleEngineConfigFixtures.value(id = id, clientId = ruleKey.clientId, scope = ruleKey.scope, name = ruleKey.name, config = config),
+            RuleEngineConfigFixtures.key(ruleKey.scope, ruleKey.name),
+            RuleEngineConfigFixtures.value(id = id, scope = ruleKey.scope, name = ruleKey.name, config = config),
         )
     }
 

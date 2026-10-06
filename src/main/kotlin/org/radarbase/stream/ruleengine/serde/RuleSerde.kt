@@ -18,7 +18,6 @@ private val VALUE_SCHEMA: Schema = Schema.Parser().parse(
       "namespace": "org.radarbase.stream.ruleengine.avro",
       "fields": [
         {"name": "id", "type": "int"},
-        {"name": "client_id", "type": ["null", "string"], "default": null},
         {"name": "scope", "type": ["null", "string"], "default": null},
         {"name": "name", "type": ["null", "string"], "default": null},
         {"name": "value", "type": ["null", "string"], "default": null},
@@ -42,9 +41,8 @@ class RuleSerde : Serde<Rule> {
             val json = record["value"]?.toString()
             if (json == null) {
                 logger.debug(
-                    "rule_engine_config row id={} client_id={} scope={} name={} has no 'value' payload, treating as tombstone",
+                    "rule_engine_config row id={} scope={} name={} has no 'value' payload, treating as tombstone",
                     record["id"],
-                    record["client_id"],
                     record["scope"],
                     record["name"],
                 )
@@ -54,9 +52,8 @@ class RuleSerde : Serde<Rule> {
                 mapper.readValue(json, Rule::class.java)
             } catch (e: JsonProcessingException) {
                 logger.warn(
-                    "Failed to parse Rule JSON for rule_engine_config row id={} client_id={} scope={} name={}: {}",
+                    "Failed to parse Rule JSON for rule_engine_config row id={} scope={} name={}: {}",
                     record["id"],
-                    record["client_id"],
                     record["scope"],
                     record["name"],
                     e.message,
