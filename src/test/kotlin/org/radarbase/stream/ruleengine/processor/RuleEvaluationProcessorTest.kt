@@ -112,6 +112,23 @@ class RuleEvaluationProcessorTest {
         assertEquals(listOf("good_action"), actionNames)
     }
 
+    @Test
+    fun `forward topic in header`() {
+        val rule = rule(
+            "rule",
+            listOf(condition("true", name = "condition")),
+            actions = listOf(Action(name = "action")),
+        )
+        seed(ScopePrefix.GLOBAL.scope, "rule", rule)
+
+        processor.process(Record(observationKey(), sensorValue(0.0), 0L))
+
+        assertEquals(listOf("output_topic"), forwardedActions().map { it.targetTopic() })
+    }
+
+    private fun Record<*, *>.targetTopic(): String? =
+        headers().lastHeader(RuleEvaluationProcessor.TARGET_TOPIC_HEADER)?.value()?.toString(Charsets.UTF_8)
+
     private fun seed(scopeKey: String, storeKey: String, config: Rule) {
         val rules = store.get(scopeKey)?.rules.orEmpty() + (storeKey to config)
         store.putDirect(scopeKey, RuleGroup(rules))

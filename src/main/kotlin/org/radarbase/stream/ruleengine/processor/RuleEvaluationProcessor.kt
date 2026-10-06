@@ -1,6 +1,7 @@
 package org.radarbase.stream.ruleengine.processor
 
 import org.apache.avro.generic.GenericRecord
+import org.apache.kafka.common.header.internals.RecordHeaders
 import org.apache.kafka.streams.processor.api.ContextualProcessor
 import org.apache.kafka.streams.processor.api.ProcessorContext
 import org.apache.kafka.streams.processor.api.Record
@@ -15,6 +16,10 @@ import org.slf4j.LoggerFactory
 class RuleEvaluationProcessor(
     val globalStoreName: String,
 ) : ContextualProcessor<GenericRecord, GenericRecord, GenericRecord, Action>() {
+    companion object {
+        private val logger = LoggerFactory.getLogger(RuleEvaluationProcessor::class.java)
+        const val TARGET_TOPIC_HEADER = "rule-engine-target-topic"
+    }
 
     private lateinit var groupedRulesStore: ReadOnlyKeyValueStore<String, RuleGroup>
 
@@ -43,8 +48,10 @@ class RuleEvaluationProcessor(
             val result = evaluateRule(rule, recordKey, recordValue)
             if (result) {
                 rule.actions
-                    .forEach { action -> context().forward(Record(null, action, record.timestamp())) }
-                // TODO: Forward to the correct output streams
+                    .forEach { action ->
+                        val headers = RecordHeaders().add(TARGET_TOPIC_HEADER, rule.topic.toByteArray(Charsets.UTF_8))
+                        context().forward(Record(null, action, record.timestamp(), headers))
+                    }
             }
         }
     }
@@ -64,10 +71,6 @@ class RuleEvaluationProcessor(
             logger.warn("Failed to evaluate rule {}: {}", rule.name, e.message)
             return false
         }
-    }
-
-    companion object {
-        private val logger = LoggerFactory.getLogger(RuleEvaluationProcessor::class.java)
     }
 
     fun GenericRecord.toCelCompatible(): Map<String, Any?> =
