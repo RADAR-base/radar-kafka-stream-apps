@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonSetter
 import org.radarbase.config.ConfigUtils.Companion.withEnvVars
 import java.util.*
 
-@Suppress("PMD.ImmutableField")
 class StreamConfig {
 
     @JsonIgnore

@@ -36,7 +36,7 @@ class RadarConfigHandlerImpl : RadarConfigHandler {
     override val radarProperties: RadarBackendConfig
         get() = _properties ?: throw IllegalStateException("Properties cannot be accessed without calling load() first")
 
-    override fun isLoaded(): Boolean = _properties != null
+    private fun isLoaded(): Boolean = _properties != null
 
     @Throws(IOException::class)
     override fun load(pathFile: String?) {

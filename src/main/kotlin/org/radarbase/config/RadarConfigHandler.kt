@@ -29,7 +29,5 @@ interface RadarConfigHandler {
     @Throws(IOException::class)
     fun load(pathFile: String?)
 
-    fun isLoaded(): Boolean
-
     val kafkaProperties: KafkaProperty
 }

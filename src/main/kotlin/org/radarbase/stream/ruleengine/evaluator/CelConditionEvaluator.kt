@@ -12,7 +12,6 @@ import java.util.concurrent.ConcurrentHashMap
 
 object CelConditionEvaluator : ConditionEvaluator {
 
-    val TYPE_NAME = ExpressionType.CEL
     private val logger = LoggerFactory.getLogger(CelConditionEvaluator::class.java)
     const val KEY_MEMBER_NAME = "key"
     const val VALUE_MEMBER_NAME = "value"

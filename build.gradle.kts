@@ -57,7 +57,6 @@ dependencies {
     implementation(libs.radar.commons)
     implementation(libs.radar.commons.server)
     implementation(libs.avro)
-    implementation(libs.radar.schemas.commons)
     implementation(libs.cel.core)
 
     implementation(libs.kotlin.stdlib)
@@ -70,7 +69,6 @@ dependencies {
         exclude(group = "io.netty", module = "netty")
     }
 
-    implementation(libs.jsr305)
     implementation(libs.commons.cli)
     implementation(libs.jackson.annotations)
     implementation(libs.jackson.module.kotlin)
@@ -79,7 +77,6 @@ dependencies {
     testImplementation(libs.mockito.core)
 
     testImplementation(kotlin("test"))
-    testImplementation(libs.junit.jupiter.params)
 }
 
 // --- Vulnerability fixes start ---

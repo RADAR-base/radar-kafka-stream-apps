@@ -47,7 +47,7 @@ class KafkaProperty(private val radarBackendConfig: RadarBackendConfig) {
         props[StreamsConfig.DEFAULT_DESERIALIZATION_EXCEPTION_HANDLER_CLASS_CONFIG] =
             LogAndContinueExceptionHandler::class.java.name
 
-        radarBackendConfig.stream?.properties?.let { props.putAll(it) }
+        streamConfig.properties?.let { props.putAll(it) }
         props.putAll(singleStreamConfig.properties)
 
         props[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
