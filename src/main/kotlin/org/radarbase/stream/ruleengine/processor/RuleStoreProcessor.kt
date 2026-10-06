@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory
 class RuleStoreProcessor(
     val globalStoreName: String,
 ) : Processor<RuleKey, Rule, Void, Void> {
-
+    private val regex = Regex("^[a-zA-Z0-9._-]*$")
     private lateinit var store: KeyValueStore<String, RuleGroup>
 
     override fun init(context: ProcessorContext<Void, Void>) {
@@ -23,32 +23,46 @@ class RuleStoreProcessor(
     // TODO: Investigate if tumbstone works correctly. -> Check what event the database sends.
     override fun process(record: Record<RuleKey, Rule>) {
         val key = record.key() ?: return
-        val value = record.value()
+        val rule = record.value()
         val storeKey = key.toStoreKey()
 
-        val newScopeKeys = value
+        val newScopeKeys = rule
             ?.conditions
             ?.flatMapTo(mutableSetOf()) { it.toScopeKeys() }
             .orEmpty()
 
         removeStaleMemberships(storeKey, newScopeKeys)
 
-        if (value == null) {
+        if (rule == null) {
             logger.info("Received tombstone for rule key {}; removed from all scopes", key)
             return
         }
+        if (!isValidTopicName(rule.topic)) {
+            logger.info("Received invalid topic name {}", rule.topic)
+            return
+        }
 
-        value.conditions.forEach { condition ->
+        rule.conditions.forEach { condition ->
 
             logger.debug("Processing condition {} for rule {}", condition, key)
 
             condition.toScopeKeys().forEach { scopeKey ->
                 val currentGroup = store.get(scopeKey) ?: RuleGroup()
-                val groupRules = currentGroup.rules + (storeKey to value)
+                val groupRules = currentGroup.rules + (storeKey to rule)
                 store.put(scopeKey, RuleGroup(groupRules))
                 logger.debug("Added condition key {} for scope {}", key, scopeKey)
             }
         }
+    }
+
+    private fun isValidTopicName(topicName: String): Boolean {
+        if (topicName.isBlank()) {
+            return false
+        }
+        if (topicName.length >= 250) {
+            return false
+        }
+        return regex.matches(topicName)
     }
 
     private fun removeStaleMemberships(storeKey: String, newScopeKeys: Set<String>) {
