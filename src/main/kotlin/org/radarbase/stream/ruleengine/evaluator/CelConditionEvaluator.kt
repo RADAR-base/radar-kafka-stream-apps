@@ -6,7 +6,6 @@ import dev.cel.compiler.CelCompiler
 import dev.cel.compiler.CelCompilerFactory
 import dev.cel.runtime.CelRuntime
 import dev.cel.runtime.CelRuntimeFactory
-import org.radarbase.stream.ruleengine.domain.ExpressionType
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
 

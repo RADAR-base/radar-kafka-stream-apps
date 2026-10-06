@@ -44,8 +44,6 @@ class FixtureRadarConfigHandler(
         // Fixture config is already loaded in-memory; nothing to do.
     }
 
-    override fun isLoaded(): Boolean = true
-
     companion object {
         val TEST_STREAM_PROPERTIES: Map<String, String> = mapOf(
             "main.consumer.fetch.max.wait.ms" to "100",

@@ -119,6 +119,7 @@ testing {
             useJUnitJupiter()
             dependencies {
                 implementation(project())
+                implementation(libs.radar.schemas.commons)
                 implementation(libs.testcontainers.kafka)
                 implementation(libs.testcontainers.junit.jupiter)
             }
