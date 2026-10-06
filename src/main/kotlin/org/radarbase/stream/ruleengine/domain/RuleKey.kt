@@ -1,6 +1,6 @@
 package org.radarbase.stream.ruleengine.domain
 
-// TODO make the key agnostic for AppConfig. Ask Pim what this means
+// TODO remove client_id from query
 data class RuleKey(
     val scope: String,
     val name: String,
