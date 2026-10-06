@@ -5,14 +5,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonSetter
 import org.radarbase.config.ConfigUtils.Companion.withEnvVars
-import org.radarbase.stream.TimeWindowMetadata
 import java.time.Duration
 import java.util.*
 
 @Suppress("PMD.ImmutableField")
 class StreamConfig {
-    private val timeWindowCommitInterval: MutableMap<TimeWindowMetadata, Duration> =
-        EnumMap(TimeWindowMetadata::class.java)
 
     @JsonIgnore
     private val priorityThreads: MutableMap<RadarConfigHandler.Priority, Int> =
@@ -23,9 +20,6 @@ class StreamConfig {
 
     @JsonProperty("max_commit_interval")
     var maxCommitInterval: Long = Duration.ofHours(3).seconds
-
-    @JsonProperty("time_window_commit_interval_multiplier")
-    var timeWindowCommitIntervalMultiplier: Float = 0.5f
 
     @JsonProperty
     var properties: Map<String, String>? = null
@@ -57,19 +51,6 @@ class StreamConfig {
                 },
             )
         }
-
-    @JsonIgnore
-    fun getCommitIntervalForTimeWindow(w: TimeWindowMetadata): Duration {
-        if (timeWindowCommitInterval.isEmpty()) {
-            timeWindowCommitInterval.putAll(
-                TimeWindowMetadata.values().associateWith { t ->
-                    val base = (timeWindowCommitIntervalMultiplier * t.intervalInMilliSec / 1000.0).toLong()
-                    Duration.ofSeconds(maxCommitInterval.coerceAtMost(base.coerceAtMost(maxCommitInterval)))
-                },
-            )
-        }
-        return timeWindowCommitInterval[w]!!
-    }
 
     fun threadsByPriority(level: RadarConfigHandler.Priority): Int = priorityThreads[level] ?: 1
 

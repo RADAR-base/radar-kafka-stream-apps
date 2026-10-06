@@ -7,7 +7,6 @@ import org.radarbase.config.KafkaProperty
 import org.radarbase.config.RadarBackendConfig
 import org.radarbase.config.RadarConfigHandler
 import org.radarbase.config.SingleStreamConfig
-import org.radarbase.topic.KafkaTopic
 import org.slf4j.LoggerFactory
 import java.time.Duration
 import java.util.concurrent.CopyOnWriteArrayList
@@ -22,7 +21,6 @@ abstract class AbstractStreamWorker : StreamWorker, StreamsUncaughtExceptionHand
     internal val streamDefinitions = CopyOnWriteArrayList<StreamDefinition>()
     protected lateinit var config: SingleStreamConfig
     protected lateinit var allConfig: RadarBackendConfig
-    protected var numThreads: Int = 0
     protected lateinit var kafkaProperty: KafkaProperty
     protected lateinit var master: StreamMaster
     protected var streams: List<KafkaStreams>? = null
@@ -30,42 +28,8 @@ abstract class AbstractStreamWorker : StreamWorker, StreamsUncaughtExceptionHand
     val kafkaStreamsInstances: List<KafkaStreams>?
         get() = streams
 
-    // TODO: remove unused code.
-    protected fun defineStream(input: String, output: String) {
-        defineStream(input, output, null)
-    }
-
-    protected fun defineStream(input: String, output: String, window: Duration?) {
-        streamDefinitions.add(
-            StreamDefinition(KafkaTopic(input), KafkaTopic(output), window),
-        )
-    }
-
     protected fun defineStream(def: StreamDefinition) {
         streamDefinitions.add(def)
-    }
-
-    protected fun defineSensorStream(input: String) {
-        defineStream(input, input + OUTPUT_LABEL, null)
-    }
-
-    protected fun defineWindowedSensorStream(input: String) {
-        defineWindowedSensorStream(input, input)
-    }
-
-    protected fun defineWindowedSensorStream(input: String, outputBase: String) {
-        // Since TimeWindowMetadata is in org.radarbase.stream package, we use it directly.
-        // If it's not visible, we may need to use a fully qualified name or a helper.
-        TimeWindowMetadata.entries.forEach { w ->
-            streamDefinitions.add(
-                StreamDefinition(
-                    KafkaTopic(input),
-                    KafkaTopic(w.getTopicLabel(outputBase)),
-                    Duration.ofMillis(w.intervalInMilliSec),
-                    allConfig.stream!!.getCommitIntervalForTimeWindow(w),
-                ),
-            )
-        }
     }
 
     override fun getStreamDefinitions(): Stream<StreamDefinition> {
@@ -79,7 +43,6 @@ abstract class AbstractStreamWorker : StreamWorker, StreamsUncaughtExceptionHand
     ) {
         this.kafkaProperty = properties.kafkaProperties
         this.allConfig = properties.radarProperties
-        this.numThreads = allConfig.stream!!.threadsByPriority(singleConfig.priority)
         this.config = singleConfig
         this.master = streamMaster
         this.initialize()

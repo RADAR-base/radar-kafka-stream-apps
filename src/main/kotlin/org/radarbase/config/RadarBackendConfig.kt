@@ -50,8 +50,5 @@ data class RadarBackendConfig(
         get() = schemaRegistry?.let { ServerConfig.getPaths(it) }
             ?: throw IllegalStateException("'schema_registry' is not configured")
 
-    val restProxyPath: String
-        get() = checkNotNull(restProxy) { "'rest_proxy' is not configured" }.path
-
     override fun toString(): String = YamlConfigLoader().prettyString(this)
 }

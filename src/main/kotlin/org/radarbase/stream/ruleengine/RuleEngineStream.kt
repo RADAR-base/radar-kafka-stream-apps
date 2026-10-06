@@ -27,7 +27,7 @@ import java.time.Duration
 class RuleEngineStream : AbstractStreamWorker() {
 
     val ruleGroupSerde = JsonSerde(RuleGroup::class.java)
-    val ruleKeySerde = RuleKeySerde() // TODO: should the rule_engine_config_key.avsc file be stored somewhere shared?
+    val ruleKeySerde = RuleKeySerde()
     val ruleSerde = RuleSerde()
     val actionSerde = JsonSerde(Action::class.java)
 

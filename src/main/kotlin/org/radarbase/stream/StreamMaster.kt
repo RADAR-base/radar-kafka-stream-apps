@@ -3,13 +3,10 @@ package org.radarbase.stream
 import org.radarbase.config.BackendProcess
 import org.radarbase.config.RadarConfigHandler
 import org.radarbase.config.SingleStreamConfig
-import org.radarbase.util.Monitor
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.util.concurrent.Executors
-import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.ScheduledExecutorService
-import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.stream.Collectors
@@ -136,15 +133,6 @@ open class StreamMaster(
         }
     }
 
-    fun restartStream(worker: StreamWorker) {
-        logger.info("Restarting stream {}", worker)
-        try {
-            executor.schedule({ worker.start() }, RETRY_TIMEOUT.toLong(), TimeUnit.MILLISECONDS)
-        } catch (ex: RejectedExecutionException) {
-            logger.info("Failed to schedule: {}", ex.message)
-        }
-    }
-
     protected fun announceTopics() {
         logger.info(
             "If AUTO.CREATE.TOPICS.ENABLE is FALSE you must create the following topics before starting: \n  - {}",
@@ -153,22 +141,16 @@ open class StreamMaster(
                 .joinToString("\n - "),
         )
     }
-
-    fun addMonitor(monitor: Monitor): ScheduledFuture<*> {
-        return executor.scheduleAtFixedRate(monitor, 0, 30, TimeUnit.SECONDS)
-    }
-
     override fun uncaughtException(t: Thread, e: Throwable) {
         logger.error("StreamMaster error in Thread {}", t.name, e)
         try {
             shutdown()
-        } catch (e1: InterruptedException) {
+        } catch (_: InterruptedException) {
             // ignore
         }
     }
 
     companion object {
         private val logger = LoggerFactory.getLogger(StreamMaster::class.java)
-        const val RETRY_TIMEOUT = 300000
     }
 }

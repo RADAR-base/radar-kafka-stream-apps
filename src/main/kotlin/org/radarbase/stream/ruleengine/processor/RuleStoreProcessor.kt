@@ -20,7 +20,6 @@ class RuleStoreProcessor(
         store = context.getStateStore(globalStoreName)
     }
 
-    // TODO: What does this need to do? Consider changing the names
     // TODO: Investigate if tumbstone works correctly. -> Check what event the database sends.
     override fun process(record: Record<RuleKey, Rule>) {
         val key = record.key() ?: return
