@@ -10,6 +10,7 @@ import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.ByteArraySerializer
 import org.radarbase.stream.ruleengine.domain.Rule
+import org.radarbase.stream.ruleengine.domain.RuleKey
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.util.Properties
@@ -62,23 +63,23 @@ object RuleEngineConfigFixtures {
         return out.toByteArray()
     }
 
-    fun key(scope: String, name: String): ByteArray = encode(
+    fun key(ruleKey: RuleKey): ByteArray = encode(
         KEY_SCHEMA,
         GenericData.Record(KEY_SCHEMA).apply {
-            put("scope", scope)
-            put("name", name)
+            put("scope", ruleKey.scope)
+            put("name", ruleKey.name)
         },
     )
 
-    fun value(id: Int, scope: String, name: String, config: Rule): ByteArray =
-        valueRaw(id, scope, name, mapper.writeValueAsString(config))
+    fun value(id: Int, key: RuleKey, rule: Rule): ByteArray =
+        valueRaw(id, key, mapper.writeValueAsString(rule))
 
-    fun valueRaw(id: Int, scope: String, name: String, rawJson: String?): ByteArray = encode(
+    fun valueRaw(id: Int, key: RuleKey, rawJson: String?): ByteArray = encode(
         VALUE_SCHEMA,
         GenericData.Record(VALUE_SCHEMA).apply {
             put("id", id)
-            put("scope", scope)
-            put("name", name)
+            put("scope", key.scope)
+            put("name", key.name)
             put("value", rawJson)
             put("create_timestamp", System.currentTimeMillis())
             put("version", 1)

@@ -24,9 +24,9 @@ import org.radarbase.stream.ruleengine.harness.RuleEngineConfigFixtures
 import org.radarbase.stream.ruleengine.harness.StateStoreQueries
 import org.radarbase.stream.ruleengine.harness.StreamReadiness
 import org.radarbase.stream.ruleengine.harness.StreamTeardown
+import org.radarbase.stream.ruleengine.harness.Topics
 import org.radarbase.stream.ruleengine.processor.ScopePrefix
 import java.nio.file.Path
-import java.util.UUID
 import java.util.stream.Stream
 
 @ExtendWith(KafkaBrokerExtension::class)
@@ -43,9 +43,9 @@ class GlobalStore {
     fun `global store is populated from a global-scope rule`(@TempDir stateDir: Path) {
         val topics = Topics.unique()
         val ruleKey = RuleKey(scope = "config", name = "high_heart_rate")
-        val config = rule(name = "high_heart_rate", topic = topics.outputTopic, expression = "value.heartRate > 120")
+        val rule = rule(name = "high_heart_rate", topic = topics.outputTopic1, expression = "value.heartRate > 120")
 
-        publish(topics, id = 1, ruleKey = ruleKey, config = config)
+        publish(topics, id = 1, ruleKey = ruleKey, rule = rule)
 
         val streams = startWorker(topics, stateDir)
         StreamReadiness.awaitRunning(listOf(streams))
@@ -60,24 +60,24 @@ class GlobalStore {
     fun `global store restore survives malformed legacy JSON and keeps the later well-formed record`(@TempDir stateDir: Path) {
         val topics = Topics.unique()
         val ruleKey = RuleKey(scope = "project.test-questionnaire", name = "rule4")
-        val config = rule(name = "rule4", topic = topics.outputTopic, expression = "value.heartRate > 120")
+        val rule = rule(name = "rule4", topic = topics.outputTopic1, expression = "value.heartRate > 120")
 
         val malformedJson = """
-            {"name":"rule4","topic":"${topics.outputTopic}","conditions":[{"type":"cel","expression":"value.heartRate > 120"       "projects":["STAGING_PROJECT"],"subjects":null,"name":"rule4_condition"}],"actions":[{"name":"notify"}]}
+            {"name":"rule4","topic":"${topics.outputTopic1}","conditions":[{"type":"cel","expression":"value.heartRate > 120"       "projects":["STAGING_PROJECT"],"subjects":null,"name":"rule4_condition"}],"actions":[{"name":"notify"}]}
         """.trimIndent()
 
-        KafkaTopics.createTopics(KafkaBroker.bootstrapServers, topics.inputTopic, topics.outputTopic, topics.globalStoreTopic)
+        KafkaTopics.createTopics(KafkaBroker.bootstrapServers, topics.all())
         RuleEngineConfigFixtures.publish(
             KafkaBroker.bootstrapServers,
             topics.globalStoreTopic,
-            RuleEngineConfigFixtures.key(ruleKey.scope, ruleKey.name),
-            RuleEngineConfigFixtures.valueRaw(id = 1, scope = ruleKey.scope, name = ruleKey.name, rawJson = malformedJson),
+            RuleEngineConfigFixtures.key(ruleKey),
+            RuleEngineConfigFixtures.valueRaw(id = 1, key = ruleKey, rawJson = malformedJson),
         )
         RuleEngineConfigFixtures.publish(
             KafkaBroker.bootstrapServers,
             topics.globalStoreTopic,
-            RuleEngineConfigFixtures.key(ruleKey.scope, ruleKey.name),
-            RuleEngineConfigFixtures.value(id = 2, scope = ruleKey.scope, name = ruleKey.name, config = config),
+            RuleEngineConfigFixtures.key(ruleKey),
+            RuleEngineConfigFixtures.value(id = 2, key = ruleKey, rule = rule),
         )
 
         val streams = startWorker(topics, stateDir)
@@ -87,16 +87,16 @@ class GlobalStore {
         val ruleGroup: RuleGroup? = StateStoreQueries.waitForValue(streams, topics.globalStoreName, ScopePrefix.GLOBAL.scope)
 
         assertNotNull(ruleGroup, "Expected the later well-formed record to land in the store under the '${ScopePrefix.GLOBAL.scope}' key")
-        assertEquals(config, ruleGroup!!.rules[ruleKey.toStoreKey()])
+        assertEquals(rule, ruleGroup!!.rules[ruleKey.toStoreKey()])
     }
 
-    private fun publish(topics: Topics, id: Int, ruleKey: RuleKey, config: Rule) {
-        KafkaTopics.createTopics(KafkaBroker.bootstrapServers, topics.inputTopic, topics.outputTopic, topics.globalStoreTopic)
+    private fun publish(topics: Topics, id: Int, ruleKey: RuleKey, rule: Rule) {
+        KafkaTopics.createTopics(KafkaBroker.bootstrapServers, topics.all())
         RuleEngineConfigFixtures.publish(
             KafkaBroker.bootstrapServers,
             topics.globalStoreTopic,
-            RuleEngineConfigFixtures.key(ruleKey.scope, ruleKey.name),
-            RuleEngineConfigFixtures.value(id = id, scope = ruleKey.scope, name = ruleKey.name, config = config),
+            RuleEngineConfigFixtures.key(ruleKey),
+            RuleEngineConfigFixtures.value(id = id, key = ruleKey, rule = rule),
         )
     }
 
@@ -114,7 +114,7 @@ class GlobalStore {
             streamClass = RuleEngineStream::class.java
             properties = mapOf(
                 "input_topic" to topics.inputTopic,
-                "output_topic" to topics.outputTopic,
+                "output_topic" to topics.outputTopic1,
                 "global_store_name" to topics.globalStoreName,
                 "global_store_topic" to topics.globalStoreTopic,
                 StreamsConfig.STATE_DIR_CONFIG to stateDir.toString(),
@@ -130,24 +130,5 @@ class GlobalStore {
         worker.start()
 
         return requireNotNull(worker.kafkaStreamsInstances) { "RuleEngineStream did not build any KafkaStreams instances" }.first()
-    }
-
-    private data class Topics(
-        val inputTopic: String,
-        val outputTopic: String,
-        val globalStoreTopic: String,
-        val globalStoreName: String,
-    ) {
-        companion object {
-            fun unique(): Topics {
-                val suffix = UUID.randomUUID().toString().replace("-", "")
-                return Topics(
-                    inputTopic = "input_topic_$suffix",
-                    outputTopic = "output_topic_$suffix",
-                    globalStoreTopic = "rule_engine_config_$suffix",
-                    globalStoreName = "JIT_RULES_STORE_$suffix",
-                )
-            }
-        }
     }
 }

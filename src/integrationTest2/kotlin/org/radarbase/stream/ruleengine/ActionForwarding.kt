@@ -29,12 +29,12 @@ import org.radarbase.stream.ruleengine.harness.OutputTopicConsumer
 import org.radarbase.stream.ruleengine.harness.RuleEngineConfigFixtures
 import org.radarbase.stream.ruleengine.harness.StreamReadiness
 import org.radarbase.stream.ruleengine.harness.StreamTeardown
+import org.radarbase.stream.ruleengine.harness.Topics
 import org.radarcns.kafka.ObservationKey
 import org.radarcns.passive.pebble.Pebble2HeartRate
 import java.nio.file.Path
 import java.time.Duration
 import java.util.Properties
-import java.util.UUID
 
 @ExtendWith(KafkaBrokerExtension::class)
 class ActionForwarding {
@@ -53,14 +53,14 @@ class ActionForwarding {
         val schemaRegistryUrl = "mock://${topics.globalStoreName}"
 
         val ruleKey = RuleKey(scope = "config", name = "high_heart_rate")
-        val config = rule(name = "high_heart_rate", expression = "value.time > 120.0")
+        val rule = rule(name = "high_heart_rate", expression = "value.time > 120.0", topics.outputTopic1)
 
-        KafkaTopics.createTopics(KafkaBroker.bootstrapServers, topics.inputTopic, topics.outputTopic, topics.globalStoreTopic)
+        KafkaTopics.createTopics(KafkaBroker.bootstrapServers, topics.all())
         RuleEngineConfigFixtures.publish(
             KafkaBroker.bootstrapServers,
             topics.globalStoreTopic,
-            RuleEngineConfigFixtures.key(ruleKey.scope, ruleKey.name),
-            RuleEngineConfigFixtures.value(id = 1, scope = ruleKey.scope, name = ruleKey.name, config = config),
+            RuleEngineConfigFixtures.key(ruleKey),
+            RuleEngineConfigFixtures.value(id = 1, key = ruleKey, rule = rule),
         )
 
         val streams = startWorker(topics, stateDir, schemaRegistryUrl)
@@ -71,7 +71,7 @@ class ActionForwarding {
 
         val actions = OutputTopicConsumer.waitForRecordValues(
             bootstrapServers = KafkaBroker.bootstrapServers,
-            topic = topics.outputTopic,
+            topic = topics.outputTopic1,
             minCount = 1,
             streams = streams,
         ) { bytes -> mapper.readValue(bytes, Action::class.java) }
@@ -85,14 +85,14 @@ class ActionForwarding {
         val schemaRegistryUrl = "mock://${topics.globalStoreName}"
 
         val ruleKey = RuleKey(scope = "config", name = "high_heart_rate")
-        val config = rule(name = "high_heart_rate", expression = "value.time > 120.0")
+        val rule = rule(name = "high_heart_rate", expression = "value.time > 120.0", outputTopic = topics.outputTopic1)
 
-        KafkaTopics.createTopics(KafkaBroker.bootstrapServers, topics.inputTopic, topics.outputTopic, topics.globalStoreTopic)
+        KafkaTopics.createTopics(KafkaBroker.bootstrapServers, topics.all())
         RuleEngineConfigFixtures.publish(
             KafkaBroker.bootstrapServers,
             topics.globalStoreTopic,
-            RuleEngineConfigFixtures.key(ruleKey.scope, ruleKey.name),
-            RuleEngineConfigFixtures.value(id = 1, scope = ruleKey.scope, name = ruleKey.name, config = config),
+            RuleEngineConfigFixtures.key(ruleKey),
+            RuleEngineConfigFixtures.value(id = 1, key = ruleKey, rule = rule),
         )
 
         val streams = startWorker(topics, stateDir, schemaRegistryUrl)
@@ -102,13 +102,64 @@ class ActionForwarding {
 
         val actions = OutputTopicConsumer.waitForRecordValues(
             bootstrapServers = KafkaBroker.bootstrapServers,
-            topic = topics.outputTopic,
+            topic = topics.outputTopic1,
             minCount = 1,
             timeout = QUIET_PERIOD,
             streams = streams,
         ) { bytes -> mapper.readValue(bytes, Action::class.java) }
 
         assertTrue(actions.isEmpty(), "Expected no actions to be forwarded for a non-matching record, got $actions")
+    }
+
+    @Test
+    fun `each rule's actions go to that rule's topic`(@TempDir stateDir: Path) {
+        val topics = Topics.unique()
+        val schemaRegistryUrl = "mock://${topics.globalStoreName}"
+
+        val ruleKey1 = RuleKey(scope = "config", name = "high_heart_rate")
+        val rule1 = rule(name = "high_heart_rate", expression = "value.time > 120.0", outputTopic = topics.outputTopic1, actionName = "foo")
+        val ruleKey2 = RuleKey(scope = "config", name = "low_heart_rate")
+        val rule2 = rule(name = "low_heart_rate", expression = "value.time < 150.0", outputTopic = topics.outputTopic2, actionName = "bar")
+
+        KafkaTopics.createTopics(KafkaBroker.bootstrapServers, topics.all())
+        RuleEngineConfigFixtures.publish(
+            KafkaBroker.bootstrapServers,
+            topics.globalStoreTopic,
+            RuleEngineConfigFixtures.key(ruleKey1),
+            RuleEngineConfigFixtures.value(id = 1, key = ruleKey1, rule = rule1),
+        )
+        RuleEngineConfigFixtures.publish(
+            KafkaBroker.bootstrapServers,
+            topics.globalStoreTopic,
+            RuleEngineConfigFixtures.key(ruleKey2),
+            RuleEngineConfigFixtures.value(id = 2, key = ruleKey2, rule = rule2),
+        )
+
+        val streams = startWorker(topics, stateDir, schemaRegistryUrl)
+        StreamReadiness.awaitRunning(listOf(streams))
+
+        publishSensorRecord(topics.inputTopic, schemaRegistryUrl, projectId = "project-1", time = 130.0)
+        publishSensorRecord(topics.inputTopic, schemaRegistryUrl, projectId = "project-1", time = 90.0)
+        publishSensorRecord(topics.inputTopic, schemaRegistryUrl, projectId = "project-1", time = 170.0)
+        publishSensorRecord(topics.inputTopic, schemaRegistryUrl, projectId = "project-1", time = 170.0)
+
+        val actions1 = OutputTopicConsumer.waitForRecordValues(
+            bootstrapServers = KafkaBroker.bootstrapServers,
+            topic = topics.outputTopic1,
+            minCount = 3,
+            streams = streams,
+        ) { bytes -> mapper.readValue(bytes, Action::class.java) }
+
+        val actions2 = OutputTopicConsumer.waitForRecordValues(
+            bootstrapServers = KafkaBroker.bootstrapServers,
+            topic = topics.outputTopic2,
+            minCount = 2,
+            streams = streams,
+        ) { bytes -> mapper.readValue(bytes, Action::class.java) }
+
+        assertEquals(listOf(Action(name = "foo"), Action(name = "foo"), Action(name = "foo")), actions1)
+
+        assertEquals(listOf(Action(name = "bar"), Action(name = "bar")), actions2)
     }
 
     private fun publishSensorRecord(topic: String, schemaRegistryUrl: String, projectId: String, time: Double) {
@@ -130,11 +181,13 @@ class ActionForwarding {
     private fun rule(
         name: String,
         expression: String,
+        outputTopic: String,
         projects: List<String>? = null,
         subjects: List<String>? = null,
+        actionName: String = "notify",
     ) = Rule(
         name = name,
-        topic = "output_topic",
+        topic = outputTopic,
         conditions = listOf(
             Condition(
                 type = ExpressionType.CEL,
@@ -144,7 +197,7 @@ class ActionForwarding {
                 subjects = subjects,
             ),
         ),
-        actions = listOf(Action(name = "notify")),
+        actions = listOf(Action(name = actionName)),
     )
 
     private fun startWorker(topics: Topics, stateDir: Path, schemaRegistryUrl: String): KafkaStreams {
@@ -152,7 +205,7 @@ class ActionForwarding {
             streamClass = RuleEngineStream::class.java
             properties = mapOf(
                 "input_topic" to topics.inputTopic,
-                "output_topic" to topics.outputTopic,
+                "output_topic" to topics.outputTopic1,
                 "global_store_name" to topics.globalStoreName,
                 "global_store_topic" to topics.globalStoreTopic,
                 StreamsConfig.STATE_DIR_CONFIG to stateDir.toString(),
@@ -174,24 +227,5 @@ class ActionForwarding {
     private companion object {
         /** How long the non-matching test listens for output before concluding that nothing was produced. */
         val QUIET_PERIOD: Duration = Duration.ofSeconds(1)
-    }
-
-    private data class Topics(
-        val inputTopic: String,
-        val outputTopic: String,
-        val globalStoreTopic: String,
-        val globalStoreName: String,
-    ) {
-        companion object {
-            fun unique(): Topics {
-                val suffix = UUID.randomUUID().toString().replace("-", "")
-                return Topics(
-                    inputTopic = "input_topic_$suffix",
-                    outputTopic = "output_topic_$suffix",
-                    globalStoreTopic = "rule_engine_config_$suffix",
-                    globalStoreName = "JIT_RULES_STORE_$suffix",
-                )
-            }
-        }
     }
 }

@@ -14,6 +14,7 @@ import org.radarbase.stream.AbstractStreamWorker
 import org.radarbase.stream.StreamDefinition
 import org.radarbase.stream.ruleengine.domain.Action
 import org.radarbase.stream.ruleengine.domain.RuleGroup
+import org.radarbase.stream.ruleengine.processor.HeaderTopicNameExtractor
 import org.radarbase.stream.ruleengine.processor.RuleEvaluationProcessor
 import org.radarbase.stream.ruleengine.processor.RuleStoreProcessor
 import org.radarbase.stream.ruleengine.serde.JsonSerde
@@ -48,7 +49,10 @@ class RuleEngineStream : AbstractStreamWorker() {
             )
             builder.stream<GenericRecord, GenericRecord>(def.inputTopic.name)
                 .process(ProcessorSupplier { RuleEvaluationProcessor(storeConfig.storeName) })
-                .to(def.outputTopic.name, Produced.valueSerde(actionSerde))
+                .to(
+                    HeaderTopicNameExtractor(),
+                    Produced.valueSerde(actionSerde),
+                )
             val properties = getStreamProperties(this.javaClass, config, allConfig, kafkaProperty)
             KafkaStreams(builder.build(), properties)
         }
