@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.radar.commons.server)
     implementation(libs.avro)
     implementation(libs.cel.core)
+    implementation(libs.radar.schemas.commons)
 
     implementation(libs.kotlin.stdlib)
 

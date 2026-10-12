@@ -28,7 +28,7 @@ class RuleEngineStream : AbstractStreamWorker() {
 
     val ruleGroupSerde = JsonSerde(RuleGroup::class.java)
     val ruleKeySerde = RuleKeySerde()
-    val ruleSerde = RuleSerde()
+    val ruleSerde = RuleSerde() // TODO: Use a Factory
     val actionSerde = JsonSerde(Action::class.java)
 
     override fun createStreams(): List<KafkaStreams> {

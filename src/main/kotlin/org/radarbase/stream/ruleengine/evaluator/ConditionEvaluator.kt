@@ -5,6 +5,5 @@ package org.radarbase.stream.ruleengine.evaluator
  * rule's actions are emitted.
  */
 interface ConditionEvaluator {
-
     fun isTrueFor(key: Map<String, Any?>, value: Map<String, Any?>, expression: String): Boolean
 }
