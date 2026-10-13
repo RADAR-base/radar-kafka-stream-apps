@@ -5,10 +5,8 @@ import org.apache.kafka.common.header.internals.RecordHeaders
 import org.apache.kafka.streams.processor.api.ContextualProcessor
 import org.apache.kafka.streams.processor.api.ProcessorContext
 import org.apache.kafka.streams.processor.api.Record
-import org.apache.kafka.streams.state.ReadOnlyKeyValueStore
 import org.radarbase.stream.ruleengine.domain.Action
 import org.radarbase.stream.ruleengine.domain.Rule
-import org.radarbase.stream.ruleengine.domain.RuleGroup
 import org.radarbase.stream.ruleengine.evaluator.ConditionFactory
 import org.slf4j.LoggerFactory
 
@@ -21,11 +19,11 @@ class RuleEvaluationProcessor(
         const val TARGET_TOPIC_HEADER = "rule-engine-target-topic"
     }
 
-    private lateinit var groupedRulesStore: ReadOnlyKeyValueStore<String, RuleGroup>
+    private lateinit var store: RuleStore
 
     override fun init(context: ProcessorContext<GenericRecord, Action>) {
         super.init(context)
-        groupedRulesStore = context().getStateStore(globalStoreName)
+        store = RuleStore(context().getStateStore(globalStoreName))
     }
 
     override fun process(record: Record<GenericRecord, GenericRecord>) {
@@ -41,17 +39,14 @@ class RuleEvaluationProcessor(
 
         logger.debug("Processing record from topic {} with key {} and value {}", topic, recordKey, recordValue)
 
-        val ruleGroup: RuleGroup = groupedRulesStore.get(ScopePrefix.GLOBAL.scope) ?: return
-        // TODO: do something with Scope
+        val userId = recordKeyAvro["userId"]?.toString() ?: return logger.debug("record does not have userId")
+        val projectId = recordKeyAvro["projectId"]?.toString() ?: return logger.debug("record does not have projectId")
 
-        ruleGroup.rules.forEach { (_, rule) ->
+        store.getRules(userId, projectId).forEach { rule ->
             val result = evaluateRule(rule, recordKey, recordValue)
             if (result) {
-                rule.actions
-                    .forEach { action ->
-                        val headers = RecordHeaders().add(TARGET_TOPIC_HEADER, rule.topic.toByteArray(Charsets.UTF_8))
-                        context().forward(Record(null, action, record.timestamp(), headers))
-                    }
+                val headers = RecordHeaders().add(TARGET_TOPIC_HEADER, rule.action.topic.toByteArray(Charsets.UTF_8))
+                context().forward(Record(null, rule.action, record.timestamp(), headers))
             }
         }
     }
@@ -61,12 +56,9 @@ class RuleEvaluationProcessor(
         recordKey: Map<String, Any?>,
         recordValue: Map<String, Any?>,
     ): Boolean {
-        val applicableConditions = rule.conditions
         try {
-            return applicableConditions.any { condition ->
-                val evaluator = ConditionFactory.getConditionEvaluator(condition)
-                evaluator.isTrueFor(recordKey, recordValue, condition.expression)
-            }
+            val evaluator = ConditionFactory.getConditionEvaluator(rule.condition)
+            return evaluator.isTrueFor(recordKey, recordValue, rule.condition.expression)
         } catch (e: Exception) {
             logger.warn("Failed to evaluate rule {}: {}", rule.name, e.message)
             return false
@@ -80,6 +72,8 @@ class RuleEvaluationProcessor(
         is CharSequence -> this.toString() // Converts Avro Utf8 to java.lang.String
         is List<*> -> this.map { it?.toCelCompatible() }
         is Map<*, *> -> this.entries.associate { it.key.toString() to it.value?.toCelCompatible() }
+        is Float -> this.toDouble()
+        is Int, is Short -> (this as Number).toLong()
         else -> this
     }
 }

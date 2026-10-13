@@ -12,9 +12,10 @@ import org.radarbase.stream.ruleengine.domain.Condition
 import org.radarbase.stream.ruleengine.domain.ExpressionType
 import org.radarbase.stream.ruleengine.domain.Rule
 import org.radarbase.stream.ruleengine.domain.RuleKey
+import org.radarbase.stream.ruleengine.domain.ScopePrefix
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 class RuleStoreProcessorTest {
 
@@ -34,89 +35,107 @@ class RuleStoreProcessorTest {
     }
 
     @Test
-    fun `condition with subjects maps to a user scope`() {
-        val config = rule(name = "rule1", subjects = listOf("subject-1"))
-        processor.process(Record(ruleKey("rule1"), config, 0L))
+    fun `a rule is stored under the scope and name of its key`() {
+        listOf(GLOBAL, PROJECT_1, USER_1).forEach { scope ->
+            val config = rule(name = "rule1")
+            processor.process(Record(RuleKey(scope, "rule1"), config, 0L))
 
-        assertEquals(setOf(ruleKey("rule1").toStoreKey()), store.get("user.subject-1")!!.rules.keys)
-        assertNull(store.get("project.subject-1"))
+            assertEquals(mapOf("rule1" to config), store.get(scope)?.rules)
+        }
     }
 
     @Test
-    fun `condition with projects maps to a project scope`() {
-        val config = rule(name = "rule1", projects = listOf("project-1"))
-        processor.process(Record(ruleKey("rule1"), config, 0L))
+    fun `the key name is used as the store key`() {
+        val config = rule(name = "name_in_value")
+        processor.process(Record(RuleKey(GLOBAL, "name_in_key"), config, 0L))
 
-        assertTrue(store.get("project.project-1")!!.rules.containsKey(ruleKey("rule1").toStoreKey()))
-        assertNull(store.get("user.project-1"))
-    }
-
-    @Test
-    fun `condition with neither subjects nor projects maps to the global scope`() {
-        val config = rule(name = "rule1")
-        processor.process(Record(ruleKey("rule1"), config, 0L))
-
-        assertTrue(store.get(ScopePrefix.GLOBAL.scope)!!.rules.containsKey(ruleKey("rule1").toStoreKey()))
-    }
-
-    @Test
-    fun `moving a rule from one scope to another removes it from the old scope`() {
-        val key = ruleKey("rule1")
-        val originalConfig = rule(name = "rule1", projects = listOf("project-1"))
-        processor.process(Record(key, originalConfig, 0L))
-        assertTrue(store.get("project.project-1")!!.rules.containsKey(key.toStoreKey()))
-
-        val movedConfig = rule(name = "rule1", subjects = listOf("subject-1"))
-        processor.process(Record(key, movedConfig, 0L))
-
-        assertNull(store.get("project.project-1")?.rules?.get(key.toStoreKey()))
-        assertTrue(store.get("user.subject-1")!!.rules.containsKey(key.toStoreKey()))
-    }
-
-    @Test
-    fun `a tombstone removes the rule from all scopes it was in`() {
-        val key = ruleKey("rule1")
-        val config = rule(name = "rule1", projects = listOf("project-1"))
-        processor.process(Record(key, config, 0L))
-        assertTrue(store.get("project.project-1")!!.rules.containsKey(key.toStoreKey()))
-
-        processor.process(Record(key, null, 0L))
-
-        assertNull(store.get("project.project-1"))
+        assertEquals(setOf("name_in_key"), store.get(GLOBAL)?.rules?.keys)
     }
 
     @Test
     fun `multiple rules aggregate into the same scope`() {
-        val configA = rule(name = "rule_a", projects = listOf("project-1"))
-        val configB = rule(name = "rule_b", projects = listOf("project-1"))
+        processor.process(Record(RuleKey(PROJECT_1, "rule_a"), rule(name = "rule_a"), 0L))
+        processor.process(Record(RuleKey(PROJECT_1, "rule_b"), rule(name = "rule_b"), 0L))
 
-        processor.process(Record(ruleKey("rule_a"), configA, 0L))
-        processor.process(Record(ruleKey("rule_b"), configB, 0L))
-
-        assertEquals(
-            setOf(ruleKey("rule_a").toStoreKey(), ruleKey("rule_b").toStoreKey()),
-            store.get("project.project-1")!!.rules.keys,
-        )
+        assertEquals(setOf("rule_a", "rule_b"), store.get(PROJECT_1)?.rules?.keys)
     }
 
-    private fun ruleKey(name: String) = RuleKey(scope = "config", name = name)
+    @Test
+    fun `a rule with the same key replaces the previous version`() {
+        processor.process(Record(RuleKey(GLOBAL, "rule1"), rule(name = "rule1", topic = "old_topic"), 0L))
+        processor.process(Record(RuleKey(GLOBAL, "rule1"), rule(name = "rule1", topic = "new_topic"), 0L))
+
+        assertEquals("new_topic", store.get(GLOBAL)?.rules?.get("rule1")?.action?.topic)
+    }
+
+    @Test
+    fun `rules with the same name in different scopes are stored independently`() {
+        val projectRule = rule(name = "rule1", topic = "project_topic")
+        val userRule = rule(name = "rule1", topic = "user_topic")
+        processor.process(Record(RuleKey(PROJECT_1, "rule1"), projectRule, 0L))
+        processor.process(Record(RuleKey(USER_1, "rule1"), userRule, 0L))
+
+        assertEquals(projectRule, store.get(PROJECT_1)?.rules?.get("rule1"))
+        assertEquals(userRule, store.get(USER_1)?.rules?.get("rule1"))
+    }
+
+    @Test
+    fun `a tombstone removes the rule only from the scope of its key`() {
+        processor.process(Record(RuleKey(PROJECT_1, "rule1"), rule(name = "rule1"), 0L))
+        processor.process(Record(RuleKey(PROJECT_1, "rule2"), rule(name = "rule2"), 0L))
+        processor.process(Record(RuleKey(USER_1, "rule1"), rule(name = "rule1"), 0L))
+
+        processor.process(Record(RuleKey(PROJECT_1, "rule1"), null, 0L))
+
+        assertEquals(setOf("rule2"), store.get(PROJECT_1)?.rules?.keys)
+        assertEquals(setOf("rule1"), store.get(USER_1)?.rules?.keys)
+    }
+
+    @Test
+    fun `a tombstone for the last rule of a scope leaves no rules in that scope`() {
+        processor.process(Record(RuleKey(PROJECT_1, "rule1"), rule(name = "rule1"), 0L))
+
+        processor.process(Record(RuleKey(PROJECT_1, "rule1"), null, 0L))
+
+        assertEquals(emptyMap(), store.get(PROJECT_1)?.rules.orEmpty())
+    }
+
+
+    @Test
+    fun `an update with an invalid topic removes the previously stored rule`() {
+        processor.process(Record(RuleKey(GLOBAL, "rule1"), rule(name = "rule1", topic = "valid_topic"), 0L))
+
+        processor.process(Record(RuleKey(GLOBAL, "rule1"), rule(name = "rule1", topic = "invalid topic"), 0L))
+
+        assertFalse(store.get(GLOBAL)?.rules.orEmpty().containsKey("rule1"))
+    }
+
+    @Test
+    fun `a record with a null key is ignored`() {
+        processor.process(Record(null, rule(name = "rule1"), 0L))
+
+        assertEquals(0L, store.approximateNumEntries())
+    }
 
     private fun rule(
         name: String,
-        projects: List<String>? = null,
-        subjects: List<String>? = null,
+        topic: String = "output_topic",
     ) = Rule(
         name = name,
-        topic = "output_topic",
-        conditions = listOf(
-            Condition(
-                type = ExpressionType.CEL,
-                expression = "true",
-                name = "${name}_condition",
-                projects = projects,
-                subjects = subjects,
-            ),
+        condition = Condition(
+            type = ExpressionType.CEL,
+            expression = "true",
+            name = "${name}_condition",
         ),
-        actions = listOf(Action(name = "notify")),
+        action = Action(
+            topic = topic,
+            name = "notify",
+        ),
     )
+
+    companion object {
+        private val GLOBAL = ScopePrefix.GLOBAL.prefix
+        private val PROJECT_1 = ScopePrefix.PROJECT.prefix + "project-1"
+        private val USER_1 = ScopePrefix.USER.prefix + "user-1"
+    }
 }

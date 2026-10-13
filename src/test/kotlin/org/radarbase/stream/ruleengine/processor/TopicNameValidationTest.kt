@@ -74,20 +74,21 @@ class TopicNameValidationTest {
         assertNull(store.get("global"))
     }
 
-    private fun ruleKey() = RuleKey(scope = "config", name = "rule-1")
+    private fun ruleKey() = RuleKey(scope = "global", name = "rule-1")
 
     private fun rule(
         topic: String,
     ) = Rule(
         name = "rule-1",
-        topic = topic,
-        conditions = listOf(
+        condition =
             Condition(
                 type = ExpressionType.CEL,
                 expression = "true",
                 name = "condition",
             ),
+        action = Action(
+            name = "notify",
+            topic = topic
         ),
-        actions = listOf(Action(name = "notify")),
     )
 }

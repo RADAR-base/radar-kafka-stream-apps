@@ -16,6 +16,15 @@ object StateStoreQueries {
         storeName: String,
         key: String,
         timeout: Duration = Duration.ofSeconds(10),
+    ): V? = waitUntil(streams, storeName, key, timeout) { it != null }
+
+    /** Polls [key] until [predicate] holds for its value or [timeout] passes, and returns the last value read. */
+    fun <V> waitUntil(
+        streams: KafkaStreams,
+        storeName: String,
+        key: String,
+        timeout: Duration = Duration.ofSeconds(10),
+        predicate: (V?) -> Boolean,
     ): V? {
         val deadline = Instant.now().plus(timeout)
         while (true) {
@@ -28,7 +37,7 @@ object StateStoreQueries {
             } catch (ex: InvalidStateStoreException) {
                 null
             }
-            if (value != null || Instant.now().isAfter(deadline)) return value
+            if (predicate(value) || Instant.now().isAfter(deadline)) return value
             Thread.sleep(POLL_INTERVAL.toMillis())
         }
     }

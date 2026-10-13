@@ -39,6 +39,7 @@ class RuleSerde : Serde<Rule> {
             val bytes = data ?: return null
             val record = avroSerde.decode(bytes)
             val json = record["value"]?.toString()
+            val scope = record["scope"]?.toString()
             if (json == null) {
                 logger.debug(
                     "rule_engine_config row id={} scope={} name={} has no 'value' payload, treating as tombstone",
@@ -48,8 +49,22 @@ class RuleSerde : Serde<Rule> {
                 )
                 return null
             }
+            if (scope == null) {
+                logger.debug(
+                    "rule_engine_config row id={} scope={} name={} has no 'scope' payload, treating as tombstone",
+                    record["id"],
+                    record["scope"],
+                    record["name"],
+                )
+                return null
+            }
+            if (json.isEmpty()) {
+                return null
+            }
             return try {
-                mapper.readValue(json, Rule::class.java)
+                mapper.readValue(json, Rule::class.java).copy(
+                    scope = scope,
+                )
             } catch (e: JsonProcessingException) {
                 logger.warn(
                     "Failed to parse Rule JSON for rule_engine_config row id={} scope={} name={}: {}",

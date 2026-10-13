@@ -71,14 +71,14 @@ object RuleEngineConfigFixtures {
         },
     )
 
-    fun value(id: Int, key: RuleKey, rule: Rule): ByteArray =
-        valueRaw(id, key, mapper.writeValueAsString(rule))
+    fun value(id: Int, key: RuleKey, rule: Rule, scope: String? = key.scope): ByteArray =
+        valueRaw(id, key, mapper.writeValueAsString(rule), scope)
 
-    fun valueRaw(id: Int, key: RuleKey, rawJson: String?): ByteArray = encode(
+    fun valueRaw(id: Int, key: RuleKey, rawJson: String?, scope: String? = key.scope): ByteArray = encode(
         VALUE_SCHEMA,
         GenericData.Record(VALUE_SCHEMA).apply {
             put("id", id)
-            put("scope", key.scope)
+            put("scope", scope)
             put("name", key.name)
             put("value", rawJson)
             put("create_timestamp", System.currentTimeMillis())
@@ -86,7 +86,14 @@ object RuleEngineConfigFixtures {
         },
     )
 
-    fun publish(bootstrapServers: String, topic: String, key: ByteArray, value: ByteArray) {
+    fun publishRule(bootstrapServers: String, topic: String, id: Int, key: RuleKey, rule: Rule) =
+        publish(bootstrapServers, topic, key(key), value(id, key, rule))
+
+    /** Publishes a Kafka tombstone: a record with the rule key and a null value. */
+    fun publishTombstone(bootstrapServers: String, topic: String, key: RuleKey) =
+        publish(bootstrapServers, topic, key(key), null)
+
+    fun publish(bootstrapServers: String, topic: String, key: ByteArray, value: ByteArray?) {
         val props = Properties().apply {
             put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers)
         }
